@@ -11,7 +11,8 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 
 ### ✨ Key Features
 - **Intelligent Parsing**: Automatically extract IP, Vendor, Model, and Location from unstructured text or tables.
-- **Enterprise Server OOB**: Full support for **DELL iDRAC**, **Inspur ISBMC**, and **Supermicro IPMI** for power control, health monitoring, and log analysis.
+- **Bulk Import**: Native support for **Excel (.xlsx)** and **CSV** asset lists for rapid onboarding.
+- **Enterprise Server OOB**: Full support for **DELL iDRAC**, **Inspur ISBMC**, and **Supermicro IPMI**.
 - **DevOps Capabilities**: Streamlined maintenance for **Docker**, **Kubernetes (K8s)**, and **Nginx**.
 - **Storage Maintenance**: Management of **RAID (mdadm)**, **iSCSI**, **NFS/SMB** mounts, and common filesystems (**ext4, XFS, VFAT**).
 - **GPU Maintenance**: Support for **NVIDIA (N-Card)** and **AMD (A-Card)** driver installation and health monitoring.
@@ -47,7 +48,8 @@ This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-
 
 ### ✨ 核心功能
 - **智能解析**：自动从凌乱的文本或表格中提取 IP、厂商、型号和位置信息。
-- **企业服务器带外管理 (OOB)**：深度支持 **DELL iDRAC**、**浪潮 ISBMC** 及 **超微 IPMI**，涵盖开关机控制、硬件健康监测及日志分析。
+- **批量导入**：原生支持 **Excel (.xlsx)** 与 **CSV** 资产清单，实现快速入库。
+- **企业服务器带外管理 (OOB)**：深度支持 **DELL iDRAC**、**浪潮 ISBMC** 及 **超微 IPMI**。
 - **DevOps 运维**：集成 **Docker**、**Kubernetes** 及 **Nginx** 的自动化维护能力。
 - **存储维护**：支持 **RAID (mdadm)**、**iSCSI** 挂载、**NFS/SMB** 共享及常见文件系统 (**ext4, XFS, VFAT**) 的健康检查与维护。
 - **显卡维护 (GPU)**：支持 **NVIDIA (N卡)** 与 **AMD (A卡)** 的驱动安装、定期更新及状态监控。
