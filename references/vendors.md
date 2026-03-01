@@ -54,6 +54,24 @@
 - Assign port: `interface 1/g1`, `vlan participation include 10`, `vlan untagged 10`
 - Save config: `save`
 
+### Enterprise Server Out-of-Band (OOB) Management
+
+#### DELL iDRAC (Redfish/IPMI)
+- **Power Control**: `ipmitool -I lanplus -H <IP> -U <User> -P <Pass> chassis power on/off/cycle`
+- **System Health**: `ipmitool -I lanplus -H <IP> sdr list`
+- **LCD Display Set**: `ipmitool -I lanplus -H <IP> delloem lcd set str <Text>`
+- **Event Log**: `ipmitool -I lanplus -H <IP> sel list`
+
+#### Inspur (ISBMC)
+- **Health Check**: `ipmitool -I lanplus -H <IP> sensor list`
+- **Boot Device Set**: `ipmitool -I lanplus -H <IP> chassis bootdev pxe/cdrom/disk`
+- **Fan Speed Check**: `ipmitool -I lanplus -H <IP> sdr type Fan`
+
+#### Supermicro (IPMI)
+- **Reset BMC**: `ipmitool -I lanplus -H <IP> bmc reset cold`
+- **Inventory Info**: `ipmitool -I lanplus -H <IP> fru print`
+- **Chassis Status**: `ipmitool -I lanplus -H <IP> chassis status`
+
 ### DevOps & Cloud Native Maintenance
 
 #### Docker

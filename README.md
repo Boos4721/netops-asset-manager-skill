@@ -11,8 +11,8 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 
 ### ✨ Key Features
 - **Intelligent Parsing**: Automatically extract IP, Vendor, Model, and Location from unstructured text or tables.
-- **DevOps Capabilities**: Streamlined maintenance for **Docker** (containers/resources), **Kubernetes** (node/pod health), and **Nginx** (config syntax/reload).
-- **GPU Maintenance**: Support for **NVIDIA (N-Card)** and **AMD (A-Card)** driver installation, periodic updates, and health monitoring.
+- **Enterprise Server OOB**: Full support for **DELL iDRAC**, **Inspur ISBMC**, and **Supermicro IPMI** for power control, health monitoring, and log analysis.
+- **DevOps Capabilities**: Streamlined maintenance for **Docker**, **Kubernetes (K8s)**, and **Nginx**.
 - **Inventory Management**: Built-in Python scripts to store and query device assets in a structured JSON format.
 - **Multi-Vendor Support**: Pre-defined command patterns for H3C, Huawei, Cisco, MikroTik, Ruijie, DCN, TP-LINK, and NETGEAR.
 - **Automation Ready**: Detailed integration guides for `Netmiko` to perform automated configuration backups and batch provisioning.
@@ -45,8 +45,8 @@ This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-
 
 ### ✨ 核心功能
 - **智能解析**：自动从凌乱的文本或表格中提取 IP、厂商、型号和位置信息。
-- **DevOps 运维**：集成 **Docker**（容器/资源监控）、**Kubernetes**（节点/Pod 健康检查）及 **Nginx**（配置校验/热重载）的自动化维护能力。
-- **显卡维护 (GPU)**：支持 **NVIDIA (N卡)** 与 **AMD (A卡)** 的驱动安装、定期更新及状态监控。
+- **企业服务器带外管理 (OOB)**：深度支持 **DELL iDRAC**、**浪潮 ISBMC** 及 **超微 IPMI**，涵盖开关机控制、硬件健康监测及日志分析。
+- **DevOps 运维**：集成 **Docker**、**Kubernetes** 及 **Nginx** 的自动化维护能力。
 - **资产管理**：内置 Python 脚本，支持对设备资产进行结构化存储（JSON）与快速查询。
 - **多厂商兼容**：预置了华三、华为、思科、锐捷、神州数码、TP-LINK、网件等常用运维命令模板。
 - **自动化就绪**：提供了 `Netmiko` 集成指南，支持自动化配置备份、健康检查及批量下发。
