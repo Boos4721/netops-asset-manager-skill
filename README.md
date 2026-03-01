@@ -7,36 +7,25 @@
 <a name="english"></a>
 ## English
 
-Automated IT infrastructure inventory and maintenance skill for OpenClaw. This skill empowers your AI agent to manage network devices (H3C, Huawei, Cisco, MikroTik) and Linux systems through natural language.
+Automated IT infrastructure inventory and maintenance skill for OpenClaw. This skill empowers your AI agent to manage network devices (H3C, Huawei, Cisco, MikroTik, Ruijie, DCN, TP-LINK, NETGEAR) and Linux systems through natural language.
 
 ### ✨ Key Features
 - **Intelligent Parsing**: Automatically extract IP, Vendor, Model, and Location from unstructured text or tables.
 - **Enterprise Server OOB**: Full support for **DELL iDRAC**, **Inspur ISBMC**, and **Supermicro IPMI** for power control, health monitoring, and log analysis.
 - **DevOps Capabilities**: Streamlined maintenance for **Docker**, **Kubernetes (K8s)**, and **Nginx**.
 - **Storage Maintenance**: Management of **RAID (mdadm)**, **iSCSI**, **NFS/SMB** mounts, and common filesystems (**ext4, XFS, VFAT**).
-- **GPU Maintenance**: Support for **NVIDIA (N-Card)** and **AMD (A-Card)** driver installation, periodic updates, and health monitoring.
+- **GPU Maintenance**: Support for **NVIDIA (N-Card)** and **AMD (A-Card)** driver installation and health monitoring.
+- **Multi-Vendor Support**: Pre-defined command patterns for H3C, Huawei, Cisco, MikroTik, Ruijie, DCN, TP-LINK, and NETGEAR.
 - **External Integration**: Import assets directly from **NetBox** via API.
 - **Multi-Channel Notifications**: Integrated support for **Bark (iOS)**, **DingTalk**, and **Feishu** webhooks.
 - **Web Dashboard**: Light-weight built-in web interface to visualize device inventory and status.
 - **Safety First**: **Human-in-the-loop** confirmation required for all core network configuration changes.
-- **On-Premise Deployment**: Easily deployable on a single OpenClaw host within an internal network.
+- **On-Premise Deployment**: Secure management within internal networks.
 - **Audit Logging**: Tracks all infrastructure changes for security and compliance.
 
 ### 🛠️ Structure
 - `SKILL.md`: Core workflow definitions and agent instructions.
-- `scripts/`: Python tools for inventory, health checks, GPU, OOB, and DevOps operations.
-- `references/`: Vendor command libraries and automation implementation guides.
-- **Inventory Management**: Built-in Python scripts to store and query device assets in a structured JSON format.
-- **Multi-Vendor Support**: Pre-defined command patterns for H3C, Huawei, Cisco, MikroTik, Ruijie, DCN, TP-LINK, and NETGEAR.
-- **Automation Ready**: Detailed integration guides for `Netmiko` to perform automated configuration backups and batch provisioning.
-- **Multi-Channel Notifications**: Integrated support for **Bark (iOS)**, **DingTalk**, and **Feishu** webhooks for inspection reports.
-- **Safety First**: **Human-in-the-loop** confirmation required for all core network configuration changes.
-- **On-Premise Deployment**: Easily deployable on a single OpenClaw host within an internal network for secure management.
-- **Audit Logging**: Tracks all infrastructure changes for security and compliance.
-
-### 🛠️ Structure
-- `SKILL.md`: Core workflow definitions and agent instructions.
-- `scripts/`: Python tools for inventory CRUD operations.
+- `scripts/`: Python tools for inventory, health checks, GPU, OOB, DevOps, and Dashboards.
 - `references/`: Vendor command libraries and automation implementation guides.
 
 ### 🚀 Quick Start
@@ -54,7 +43,7 @@ This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-
 <a name="chinese"></a>
 ## 中文
 
-为 OpenClaw 打造的自动化 IT 基础设施资产管理与运维技能包。该技能赋予 AI Agent 通过自然语言管理内网网络设备（华三、华为、思科、MikroTik）及 Linux 系统。
+为 OpenClaw 打造的自动化 IT 基础设施资产管理与运维技能包。该技能赋予 AI Agent 通过自然语言管理内网网络设备（华三、华为、思科、锐捷、神州数码、TP-LINK、网件等）及 Linux 系统。
 
 ### ✨ 核心功能
 - **智能解析**：自动从凌乱的文本或表格中提取 IP、厂商、型号和位置信息。
@@ -62,27 +51,17 @@ This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-
 - **DevOps 运维**：集成 **Docker**、**Kubernetes** 及 **Nginx** 的自动化维护能力。
 - **存储维护**：支持 **RAID (mdadm)**、**iSCSI** 挂载、**NFS/SMB** 共享及常见文件系统 (**ext4, XFS, VFAT**) 的健康检查与维护。
 - **显卡维护 (GPU)**：支持 **NVIDIA (N卡)** 与 **AMD (A卡)** 的驱动安装、定期更新及状态监控。
+- **多厂商兼容**：内置华三、华为、思科、锐捷、神州数码、TP-LINK、网件等主流厂商命令库。
 - **外部集成**：支持通过 API 直接从 **NetBox** 导入设备资产。
 - **多渠道告警**：集成 **Bark (iOS)**、**钉钉**及**飞书**机器人 Webhook，支持自动推送巡检报告。
 - **Web 可视化**：内置轻量级看板，可直观查看设备清单、厂商分布及资产状态。
-- **安全加固**：核心网络变更引入**人工审查（Human-in-the-loop）**机制，必须经用户确认后方可执行。
-- **内网部署**：支持在内网单主机部署，确保管理流量不经过公网，安全可控。
+- **安全加固**：核心网络变更引入 **人工审查 (Human-in-the-loop)** 机制，必须经用户确认后方可执行。
+- **内网部署**：支持在内网单主机部署，管理流量不经过公网，安全可控。
 - **审计日志**：记录所有基础设施变更操作，确保运维过程可追溯。
 
 ### 🛠️ 目录结构
 - `SKILL.md`: 核心流程定义与 Agent 执行指令。
-- `scripts/`: 用于资产管理、硬件巡检、GPU、带外及 DevOps 维护的 Python 工具集。
-- `references/`: 厂商命令库与自动化执行参考文档。
-- **资产管理**：内置 Python 脚本，支持对设备资产进行结构化存储（JSON）与快速查询。
-- **多厂商兼容**：预置了华三、华为、思科、锐捷、神州数码、TP-LINK、网件等常用运维命令模板。
-- **自动化就绪**：提供了 `Netmiko` 集成指南，支持自动化配置备份、健康检查及批量下发。
-- **多渠道告警**：集成 **Bark (iOS)**、**钉钉**及**飞书**机器人 Webhook，支持自动推送巡检报告。
-- **安全加固**：核心网络变更引入**人工审查（Human-in-the-loop）**机制，必须经用户确认后方可执行。
-- **审计日志**：记录所有基础设施变更操作，确保运维过程可追溯、更安全。
-
-### 🛠️ 目录结构
-- `SKILL.md`: 核心流程定义与 Agent 执行指令。
-- `scripts/`: 用于资产增删改查及硬件巡检的 Python 工具集。
+- `scripts/`: 用于资产管理、硬件巡检、GPU、带外、DevOps 及 Web 看板的 Python 工具集。
 - `references/`: 厂商命令库与自动化执行参考文档。
 
 ### ⚖️ 开源协议
