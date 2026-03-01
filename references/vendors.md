@@ -54,6 +54,30 @@
 - Assign port: `interface 1/g1`, `vlan participation include 10`, `vlan untagged 10`
 - Save config: `save`
 
+### Storage & Filesystem Maintenance
+
+#### Software RAID (mdadm)
+- **Check Status**: `cat /proc/mdstat` or `mdadm --detail /dev/md0`
+- **Examine Disk**: `mdadm --examine /dev/sdX`
+- **Monitor Errors**: `journalctl -u mdmonitor`
+
+#### iSCSI
+- **Discovery**: `iscsiadm -m discovery -t st -p <Target_IP>`
+- **Login**: `iscsiadm -m node --login`
+- **Session Check**: `iscsiadm -m session -P 3`
+
+#### NFS / SMB (CIFS)
+- **Show Mounts**: `showmount -e <NFS_IP>` or `smbstatus`
+- **Mount NFS**: `mount -t nfs <IP>:/path /mnt/nfs`
+- **Mount SMB**: `mount -t cifs -o username=<user> //<IP>/share /mnt/smb`
+- **Test Connectivity**: `rpcinfo -p <IP>` (NFS) or `smbclient -L <IP>` (SMB)
+
+#### Filesystem Operations (vfat, ext4, xfs)
+- **Format VFAT**: `mkfs.vfat -F 32 /dev/sdX` (Good for UEFI/Boot)
+- **Disk Usage**: `df -Th` (Shows FS types)
+- **Repair**: `fsck.vfat -a /dev/sdX` or `xfs_repair /dev/sdX`
+- **Inodes Check**: `df -i`
+
 ### Enterprise Server Out-of-Band (OOB) Management
 
 #### DELL iDRAC (Redfish/IPMI)

@@ -13,6 +13,7 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 - **Intelligent Parsing**: Automatically extract IP, Vendor, Model, and Location from unstructured text or tables.
 - **Enterprise Server OOB**: Full support for **DELL iDRAC**, **Inspur ISBMC**, and **Supermicro IPMI** for power control, health monitoring, and log analysis.
 - **DevOps Capabilities**: Streamlined maintenance for **Docker**, **Kubernetes (K8s)**, and **Nginx**.
+- **Storage Maintenance**: Management of **RAID (mdadm)**, **iSCSI**, **NFS/SMB** mounts, and common filesystems (**ext4, XFS, VFAT**).
 - **GPU Maintenance**: Support for **NVIDIA (N-Card)** and **AMD (A-Card)** driver installation, periodic updates, and health monitoring.
 - **External Integration**: Import assets directly from **NetBox** via API.
 - **Multi-Channel Notifications**: Integrated support for **Bark (iOS)**, **DingTalk**, and **Feishu** webhooks.
@@ -59,6 +60,7 @@ This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-
 - **智能解析**：自动从凌乱的文本或表格中提取 IP、厂商、型号和位置信息。
 - **企业服务器带外管理 (OOB)**：深度支持 **DELL iDRAC**、**浪潮 ISBMC** 及 **超微 IPMI**，涵盖开关机控制、硬件健康监测及日志分析。
 - **DevOps 运维**：集成 **Docker**、**Kubernetes** 及 **Nginx** 的自动化维护能力。
+- **存储维护**：支持 **RAID (mdadm)**、**iSCSI** 挂载、**NFS/SMB** 共享及常见文件系统 (**ext4, XFS, VFAT**) 的健康检查与维护。
 - **显卡维护 (GPU)**：支持 **NVIDIA (N卡)** 与 **AMD (A卡)** 的驱动安装、定期更新及状态监控。
 - **外部集成**：支持通过 API 直接从 **NetBox** 导入设备资产。
 - **多渠道告警**：集成 **Bark (iOS)**、**钉钉**及**飞书**机器人 Webhook，支持自动推送巡检报告。
