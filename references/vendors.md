@@ -54,6 +54,26 @@
 - Assign port: `interface 1/g1`, `vlan participation include 10`, `vlan untagged 10`
 - Save config: `save`
 
+### DevOps & Cloud Native Maintenance
+
+#### Docker
+- **Container Status**: `docker ps -a --format "table {{.Names}}\t{{.Status}}\t{{.Image}}"`
+- **Resource Usage**: `docker stats --no-stream`
+- **Cleanup**: `docker system prune -f`
+- **Logs**: `docker logs --tail 50 <container_name>`
+
+#### Kubernetes (K8s)
+- **Node Status**: `kubectl get nodes -o wide`
+- **Pod Health**: `kubectl get pods -A | grep -v Running`
+- **Events**: `kubectl get events --sort-by='.lastTimestamp'`
+- **Resource Check**: `kubectl top nodes` / `kubectl top pods`
+
+#### Nginx
+- **Config Syntax Check**: `nginx -t`
+- **Hot Reload**: `nginx -s reload`
+- **Active Connections**: `stub_status` module parsing
+- **Error Analysis**: `tail -n 50 /var/log/nginx/error.log | grep -i error`
+
 ### GPU Maintenance & Monitoring
 
 #### NVIDIA (N-Card)
