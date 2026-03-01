@@ -19,6 +19,7 @@ This skill transforms unstructured infrastructure information into a structured 
 When a user provides asset information:
 - Use Python/Pandas to read structured files (CSV/Excel).
 - For unstructured text, use LLM extraction to identify key fields.
+- **Auto-Verification**: After adding assets, use `scripts/health_prober.py` to check if the devices are reachable (Ping/SSH).
 - Categorize vendors accurately:
   - **H3C**: Comware-based commands.
   - **Huawei**: VRP-based commands.
@@ -35,6 +36,7 @@ Store data in `assets/inventory.json` using the provided manager.
 ### 3. Automation Execution (Advanced)
 When execution is requested:
 - Map vendor types to automation drivers (e.g., `hp_comware` for H3C).
+- **Pre-flight Check**: Always run `scripts/health_prober.py` before attempting configuration to ensure targets are online.
 - **Human-in-the-loop (CRITICAL)**: For core network changes (VLAN, Routing, ACL), the agent MUST present the planned command list to the user and wait for explicit confirmation before connecting to the device.
 - Reference [automation.md](references/automation.md) for Netmiko implementation details.
 - Log all configuration changes to `assets/audit_log.txt`.
