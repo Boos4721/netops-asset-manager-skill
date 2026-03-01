@@ -54,7 +54,25 @@
 - Assign port: `interface 1/g1`, `vlan participation include 10`, `vlan untagged 10`
 - Save config: `save`
 
-## Linux (Generic & Distribution Specific)
+### GPU Maintenance & Monitoring
+
+#### NVIDIA (N-Card)
+- **Status Check**: `nvidia-smi`
+- **Driver Install (Debian)**: `apt install -y nvidia-driver`
+- **Memory/Load Check**: `nvidia-smi --query-gpu=utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv`
+- **Temperature**: `nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader`
+- **PCI Errors**: `dmesg | grep -i nvidia`
+
+#### AMD (A-Card)
+- **Status Check**: `rocm-smi` or `radeontop`
+- **Driver Install (Ubuntu)**: `amdgpu-install`
+- **Hardware Info**: `clinfo`
+- **PCI Errors**: `dmesg | grep -i amdgpu`
+
+#### System Level (PCI/Bus)
+- **List GPUs**: `lspci | grep -i vga` or `lspci | grep -i display`
+- **Detailed PCI Info**: `lspci -vnn -s <slot_id>`
+- **PCIe Link Errors**: `dmesg | grep -i "PCIe Bus Error"`
 
 ### Core Hardware Checks (All Distros)
 - **CPU Load**: `top -bn1 | grep "load average" | awk '{print $NF}'`

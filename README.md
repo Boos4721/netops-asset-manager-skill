@@ -11,6 +11,7 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 
 ### ✨ Key Features
 - **Intelligent Parsing**: Automatically extract IP, Vendor, Model, and Location from unstructured text or tables.
+- **GPU Maintenance**: Support for **NVIDIA (N-Card)** and **AMD (A-Card)** driver installation, periodic updates, and health monitoring (Temperature, Memory, PCI Errors).
 - **External Integration**: Import assets directly from **NetBox** via API.
 - **Inventory Management**: Built-in Python scripts to store and query device assets in a structured JSON format.
 - **Multi-Vendor Support**: Pre-defined command patterns for H3C, Huawei, Cisco, MikroTik, Ruijie, DCN, TP-LINK, and NETGEAR.
@@ -44,6 +45,7 @@ This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-
 
 ### ✨ 核心功能
 - **智能解析**：自动从凌乱的文本或表格中提取 IP、厂商、型号和位置信息。
+- **显卡维护 (GPU)**：支持 **NVIDIA (N卡)** 与 **AMD (A卡)** 的驱动安装、定期更新及状态监控（温度、显存、PCI 报错报警）。
 - **外部集成**：支持通过 API 直接从 **NetBox** 导入设备资产。
 - **资产管理**：内置 Python 脚本，支持对设备资产进行结构化存储（JSON）与快速查询。
 - **多厂商兼容**：预置了华三、华为、思科、锐捷、神州数码、TP-LINK、网件等常用运维命令模板。
