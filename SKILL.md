@@ -18,6 +18,7 @@ This skill transforms unstructured infrastructure information into a structured 
 ### 1. Asset Ingestion
 When a user provides asset information:
 - Use Python/Pandas to read structured files (CSV/Excel).
+- **External Integration**: Support importing assets from **NetBox** via `scripts/netbox_importer.py`. Requires NetBox API URL and Token.
 - For unstructured text, use LLM extraction to identify key fields.
 - **Auto-Verification**: After adding assets, use `scripts/health_prober.py` to check if the devices are reachable (Ping/SSH).
 - Categorize vendors accurately:

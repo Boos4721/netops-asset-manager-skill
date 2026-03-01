@@ -11,6 +11,7 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 
 ### ✨ Key Features
 - **Intelligent Parsing**: Automatically extract IP, Vendor, Model, and Location from unstructured text or tables.
+- **External Integration**: Import assets directly from **NetBox** via API.
 - **Inventory Management**: Built-in Python scripts to store and query device assets in a structured JSON format.
 - **Multi-Vendor Support**: Pre-defined command patterns for H3C, Huawei, Cisco, MikroTik, Ruijie, DCN, TP-LINK, and NETGEAR.
 - **Automation Ready**: Detailed integration guides for `Netmiko` to perform automated configuration backups and batch provisioning.
@@ -43,6 +44,7 @@ This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-
 
 ### ✨ 核心功能
 - **智能解析**：自动从凌乱的文本或表格中提取 IP、厂商、型号和位置信息。
+- **外部集成**：支持通过 API 直接从 **NetBox** 导入设备资产。
 - **资产管理**：内置 Python 脚本，支持对设备资产进行结构化存储（JSON）与快速查询。
 - **多厂商兼容**：预置了华三、华为、思科、锐捷、神州数码、TP-LINK、网件等常用运维命令模板。
 - **自动化就绪**：提供了 `Netmiko` 集成指南，支持自动化配置备份、健康检查及批量下发。
