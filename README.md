@@ -14,7 +14,8 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 - **Bulk Import**: Native support for **Excel (.xlsx)** and **CSV** asset lists for rapid onboarding.
 - **Enterprise Server OOB**: Full support for **DELL iDRAC**, **Inspur ISBMC**, and **Supermicro IPMI**.
 - **DevOps Capabilities**: Streamlined maintenance for **Docker**, **Kubernetes (K8s)**, and **Nginx**.
-- **Storage Maintenance**: Management of **RAID (mdadm)**, **iSCSI**, **NFS/SMB** mounts, and common filesystems (**ext4, XFS, VFAT**).
+- **Virtualization Support**: Advanced management for **VMware ESXi**, **OpenStack**, **QEMU/KVM**, and **LXC** (Proxmox compatible).
+- **Storage Maintenance**: Management of **RAID (mdadm)**, **iSCSI**, **NFS/SMB** mounts, and common filesystems.
 - **GPU Maintenance**: Support for **NVIDIA (N-Card)** and **AMD (A-Card)** driver installation and health monitoring.
 - **Multi-Vendor Support**: Pre-defined command patterns for H3C, Huawei, Cisco, MikroTik, Ruijie, DCN, TP-LINK, and NETGEAR.
 - **External Integration**: Import assets directly from **NetBox** via API.
@@ -51,7 +52,8 @@ This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-
 - **批量导入**：原生支持 **Excel (.xlsx)** 与 **CSV** 资产清单，实现快速入库。
 - **企业服务器带外管理 (OOB)**：深度支持 **DELL iDRAC**、**浪潮 ISBMC** 及 **超微 IPMI**。
 - **DevOps 运维**：集成 **Docker**、**Kubernetes** 及 **Nginx** 的自动化维护能力。
-- **存储维护**：支持 **RAID (mdadm)**、**iSCSI** 挂载、**NFS/SMB** 共享及常见文件系统 (**ext4, XFS, VFAT**) 的健康检查与维护。
+- **虚拟化管理**：深度支持 **VMware ESXi**、**OpenStack**、**QEMU/KVM** 及 **LXC** (兼容 Proxmox) 的虚机状态监控与基础维护。
+- **存储维护**：支持 **RAID (mdadm)**、**iSCSI** 挂载、**NFS/SMB** 共享及常见文件系统的健康检查与维护。
 - **显卡维护 (GPU)**：支持 **NVIDIA (N卡)** 与 **AMD (A卡)** 的驱动安装、定期更新及状态监控。
 - **多厂商兼容**：内置华三、华为、思科、锐捷、神州数码、TP-LINK、网件等主流厂商命令库。
 - **外部集成**：支持通过 API 直接从 **NetBox** 导入设备资产。

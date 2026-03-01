@@ -54,6 +54,27 @@
 - Assign port: `interface 1/g1`, `vlan participation include 10`, `vlan untagged 10`
 - Save config: `save`
 
+### Virtualization & Hypervisor Management
+
+#### VMware ESXi (esxcli/vim-cmd)
+- **VM List**: `vim-cmd vmsvc/getallvms`
+- **Power Operations**: `vim-cmd vmsvc/power.on <vmid>` / `power.off` / `reboot`
+- **Host Info**: `esxcli system version get`
+- **Resource Check**: `esxcli system visstats display`
+
+#### OpenStack (CLI)
+- **Server List**: `openstack server list --all-projects`
+- **Hypervisor Status**: `openstack hypervisor list`
+- **Service Health**: `openstack compute service list`
+- **Flavor Check**: `openstack flavor list`
+
+#### QEMU/KVM & Proxmox (virsh/pct)
+- **KVM List**: `virsh list --all`
+- **KVM Resource**: `virsh domstats <name>`
+- **LXC List**: `pct list`
+- **LXC Enter**: `pct enter <vmid>`
+- **Backup**: `vzdump <vmid> --storage local --compress lzo`
+
 ### Storage & Filesystem Maintenance
 
 #### Software RAID (mdadm)
