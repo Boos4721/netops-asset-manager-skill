@@ -16,6 +16,7 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 - **GPU Maintenance**: Support for **NVIDIA (N-Card)** and **AMD (A-Card)** driver installation, periodic updates, and health monitoring.
 - **External Integration**: Import assets directly from **NetBox** via API.
 - **Multi-Channel Notifications**: Integrated support for **Bark (iOS)**, **DingTalk**, and **Feishu** webhooks.
+- **Web Dashboard**: Light-weight built-in web interface to visualize device inventory and status.
 - **Safety First**: **Human-in-the-loop** confirmation required for all core network configuration changes.
 - **On-Premise Deployment**: Easily deployable on a single OpenClaw host within an internal network.
 - **Audit Logging**: Tracks all infrastructure changes for security and compliance.
@@ -61,6 +62,7 @@ This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-
 - **显卡维护 (GPU)**：支持 **NVIDIA (N卡)** 与 **AMD (A卡)** 的驱动安装、定期更新及状态监控。
 - **外部集成**：支持通过 API 直接从 **NetBox** 导入设备资产。
 - **多渠道告警**：集成 **Bark (iOS)**、**钉钉**及**飞书**机器人 Webhook，支持自动推送巡检报告。
+- **Web 可视化**：内置轻量级看板，可直观查看设备清单、厂商分布及资产状态。
 - **安全加固**：核心网络变更引入**人工审查（Human-in-the-loop）**机制，必须经用户确认后方可执行。
 - **内网部署**：支持在内网单主机部署，确保管理流量不经过公网，安全可控。
 - **审计日志**：记录所有基础设施变更操作，确保运维过程可追溯。
