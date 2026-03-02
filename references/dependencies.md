@@ -15,8 +15,14 @@ sudo apt install -y \
     mtr-tiny \
     traceroute \
     snmp \
+    snmp-mibs-downloader \
     smartmontools \
-    lm-sensors
+    lm-sensors \
+    ethtool \
+    nmap \
+    iproute2 \
+    openssl \
+    curl
 ```
 
 ### RedHat / CentOS / Rocky / Alma
@@ -28,7 +34,12 @@ sudo dnf install -y \
     traceroute \
     net-snmp-utils \
     smartmontools \
-    lm_sensors
+    lm_sensors \
+    ethtool \
+    nmap \
+    iproute \
+    openssl \
+    curl
 ```
 
 ### Alpine Linux
@@ -40,7 +51,12 @@ sudo apk add \
     traceroute \
     net-snmp-tools \
     smartmontools \
-    lm-sensors
+    lm-sensors \
+    ethtool \
+    nmap \
+    iproute2 \
+    openssl \
+    curl
 ```
 
 ---
@@ -51,3 +67,4 @@ sudo apk add \
 2. **Speedtest**: The `speedtest-cli` is included in `requirements.txt`. / **Speedtest**: 测速工具已包含在 `requirements.txt` 中。
 3. **Sensors**: Run `sudo sensors-detect` once to configure hardware monitoring. / **Sensors**: 首次安装后运行 `sudo sensors-detect` 以配置硬件监控传感器。
 4. **SNMP**: Ensure SNMP service is allowed in your network firewall. / **SNMP**: 确保您的网络防火墙已允许 SNMP 协议流量。
+5. **Nmap**: Used for the asset discovery feature. Ensure the user running the script has appropriate permissions. / **Nmap**: 用于资产发现功能，请确保运行脚本的用户拥有相应权限。
