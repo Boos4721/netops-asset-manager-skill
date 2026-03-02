@@ -26,11 +26,14 @@
 - Check status: `/system resource print`
 - Update: `/system package update check-for-updates`
 
-## Ruijie (RGOS)
+### Ruijie (RGOS & EG Gateway)
 - Enter view: `configure terminal`
 - View VLAN: `show vlan`
 - Create VLAN: `vlan 10`
 - Assign port: `interface gigabitEthernet 0/1`, `switchport mode access`, `switchport access vlan 10`
+- **EG Gateway Status**: `show gateway status`
+- **EG NAT Sessions**: `show ip nat translations count`
+- **EG Auth Users**: `show dot1x summary`
 - Save config: `write`
 
 ## Digital China (DCN)
