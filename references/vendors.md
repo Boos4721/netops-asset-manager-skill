@@ -141,14 +141,20 @@
 
 #### NVIDIA (N-Card)
 - **Status Check**: `nvidia-smi`
-- **Driver Install (Debian)**: `apt install -y nvidia-driver`
+- **Driver Update (Primary - Official CN/HK)**:
+  - Download from: `https://www.nvidia.cn/Download/index.aspx?lang=cn` or `https://www.nvidia.com/zh-hk/geforce/drivers/`
+  - Install: `chmod +x NVIDIA-Linux-x86_64-xxx.run && ./NVIDIA-Linux-x86_64-xxx.run`
+- **Driver Install (Fallback - Package Manager)**: `apt install -y nvidia-driver` (Debian)
 - **Memory/Load Check**: `nvidia-smi --query-gpu=utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv`
 - **Temperature**: `nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader`
 - **PCI Errors**: `dmesg | grep -i nvidia`
 
 #### AMD (A-Card)
 - **Status Check**: `rocm-smi` or `radeontop`
-- **Driver Install (Ubuntu)**: `amdgpu-install`
+- **Driver Update (Primary - Official CN)**:
+  - Download from: `https://www.amd.com/zh-hans/support`
+  - Install: `./amdgpu-install --usecase=dkms,graphics`
+- **Driver Install (Fallback - Ubuntu)**: `apt install -y amdgpu-pro`
 - **Hardware Info**: `clinfo`
 - **PCI Errors**: `dmesg | grep -i amdgpu`
 

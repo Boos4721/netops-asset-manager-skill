@@ -53,6 +53,9 @@ This skill is designed for **On-Premise Deployment**.
 2. Clone/Install this skill.
 3. The agent will then have direct SSH access to your H3C, Huawei, Cisco, and other assets without exposing them to the public internet.
 
-## Reference
-- See [VENDORS.md](references/vendors.md) for command patterns.
-- Use `scripts/inventory_manager.py` for database operations.
+### GPU Maintenance
+- **Driver Updates**: Always prioritize official downloads for driver updates.
+  - **NVIDIA**: Use official `.run` installers from NVIDIA CN/HK sites.
+  - **AMD**: Use official `amdgpu-install` packages from AMD CN site.
+  - **Fallback**: Only use system package managers (apt/yum) if official installers fail or are explicitly requested.
+- **Monitoring**: Continuous tracking of temperature and VRAM.
