@@ -26,15 +26,39 @@
 - Check status: `/system resource print`
 - Update: `/system package update check-for-updates`
 
+## Router & Enterprise Gateway Support
+
+### H3C / Huawei (Enterprise Routers)
+- **Routing Table**: `display ip routing-table`
+- **BGP Status**: `display bgp peer`
+- **OSPF Neighbors**: `display ospf peer brief`
+- **Interface Status**: `display ip interface brief`
+- **CPU/Memory**: `display cpu-usage`, `display memory-usage`
+
+### Cisco (ISR/ASR Routers)
+- **Routing Table**: `show ip route`
+- **BGP Summary**: `show ip bgp summary`
+- **Interface Stats**: `show ip interface brief`
+- **EIGRP Neighbors**: `show ip eigrp neighbors`
+
+### MikroTik (RouterOS - Core Routing)
+- **Routes**: `/ip route print`
+- **BGP Peers**: `/routing bgp peer print`
+- **OSPF Neighbors**: `/routing ospf neighbor print`
+- **NAT Rules**: `/ip firewall nat print`
+- **Queue/QoS**: `/queue simple print`
+
 ### Ruijie (RGOS & EG Gateway)
-- Enter view: `configure terminal`
-- View VLAN: `show vlan`
-- Create VLAN: `vlan 10`
-- Assign port: `interface gigabitEthernet 0/1`, `switchport mode access`, `switchport access vlan 10`
+- **Routing Table**: `show ip route`
 - **EG Gateway Status**: `show gateway status`
 - **EG NAT Sessions**: `show ip nat translations count`
 - **EG Auth Users**: `show dot1x summary`
-- Save config: `write`
+- **BGP Status**: `show ip bgp summary`
+
+### TP-LINK / NETGEAR (Business Routers)
+- **Static Routes**: `show ip route`
+- **WAN Status**: `show interface wan`
+- **NAT Table**: `show ip nat statistics`
 
 ## Digital China (DCN)
 - Enter view: `config`
