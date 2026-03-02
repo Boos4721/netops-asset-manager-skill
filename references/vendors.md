@@ -60,6 +60,18 @@
 - **WAN Status**: `show interface wan`
 - **NAT Table**: `show ip nat statistics`
 
+## Ruijie (RGOS Switch & EG Gateway)
+- Enter view: `configure terminal`
+- View VLAN: `show vlan`
+- Create VLAN: `vlan 10`
+- Assign port: `interface gigabitEthernet 0/1`, `switchport mode access`, `switchport access vlan 10`
+- **Check MAC Table**: `show mac-address-table`
+- **Check Routing**: `show ip route`
+- **EG Gateway Status**: `show gateway status`
+- **EG NAT Sessions**: `show ip nat translations count`
+- **EG Auth Users**: `show dot1x summary`
+- Save config: `write`
+
 ## Digital China (DCN)
 - Enter view: `config`
 - View VLAN: `show vlan`
