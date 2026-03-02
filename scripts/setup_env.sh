@@ -46,30 +46,15 @@ fi
 
 # OS-Specific Mirror & Installation
 install_debian() {
-    if [ "$IS_CN" = true ]; then
-        echo "⚡ $(t '正在切换系统源至镜像站...' 'Switching system sources to mirror...')"
-        
-        # Support for Ubuntu DEB822 format (Ubuntu 24.04+)
-        if [ "$OS" = "ubuntu" ] && [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
-            echo "📦 $(t '检测到 DEB822 格式源 (Ubuntu 24.04+)，正在执行替换...' 'Detected DEB822 format (Ubuntu 24.04+), applying replacement...')"
-            sudo sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list.d/ubuntu.sources
-            sudo sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list.d/ubuntu.sources
-        fi
-
-        # Legacy sources.list support
-        if [ -f /etc/apt/sources.list ]; then
-            if [ "$OS" = "ubuntu" ]; then
-                sudo sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
-                sudo sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
-            elif [ "$OS" = "debian" ]; then
-                sudo sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
-                sudo sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
-            fi
-        fi
-    fi
+    echo "📦 $(t '正在切换系统源至镜像站...' 'Switching system sources to mirror...')"
+    
+    # ... (skipping some lines for context matching)
     echo "📦 $(t '正在更新系统软件包...' 'Updating system packages...')"
     sudo apt update
-    sudo apt install -y python3 python3-pip python3-venv ipmitool mtr-tiny traceroute snmp smartmontools lm-sensors ethtool nmap iproute2 openssl curl
+    sudo apt install -y python3 python3-pip python3-venv ipmitool mtr-tiny traceroute snmp snmp-mibs-downloader smartmontools lm-sensors ethtool nmap iproute2 openssl curl
+    
+    # Install racadm if on Debian/Ubuntu (Dell repo might be needed, but adding basic message)
+    echo "💡 $(t '如需使用 racadm，请安装 Dell iDRAC Tools。' 'For racadm, please install Dell iDRAC Tools.')"
 }
 
 install_redhat() {

@@ -218,11 +218,13 @@
 
 ## Enterprise Server Out-of-Band (OOB) Management
 
-#### DELL iDRAC (Redfish/IPMI)
+#### DELL iDRAC (Redfish/IPMI/racadm)
 - **Power Control**: `ipmitool -I lanplus -H <IP> -U <User> -P <Pass> chassis power on/off/cycle`
 - **System Health**: `ipmitool -I lanplus -H <IP> sdr list`
-- **LCD Display Set**: `ipmitool -I lanplus -H <IP> delloem lcd set str <Text>`
 - **Event Log**: `ipmitool -I lanplus -H <IP> sel list`
+- **Racadm (Remote)**: `racadm -r <IP> -u <User> -p <Pass> getsysinfo`
+- **Racadm BIOS Set**: `racadm -r <IP> -u <User> -p <Pass> set BIOS.SysProfileSettings.SysProfile Performance`
+- **Racadm Job Queue**: `racadm -r <IP> -u <User> -p <Pass> jobqueue view`
 
 #### Inspur (ISBMC)
 - **Health Check**: `ipmitool -I lanplus -H <IP> sensor list`
