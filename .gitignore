@@ -1,0 +1,7 @@
+# Ignore dynamic assets and data
+assets/inventory.json
+assets/backups/
+assets/audit_log.txt
+__pycache__/
+*.pyc
+.env

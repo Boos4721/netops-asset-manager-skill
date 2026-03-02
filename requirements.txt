@@ -1,0 +1,6 @@
+pandas
+openpyxl
+requests
+netmiko
+ipmitool
+requests-toolbelt

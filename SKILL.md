@@ -41,6 +41,7 @@ Store data in `assets/inventory.json` using the provided manager.
 ### 3. Automation Execution (Advanced)
 When execution is requested:
 - Map vendor types to automation drivers (e.g., `hp_comware` for H3C).
+- **Safe-Guard Backup**: Before applying any configuration changes, use `scripts/config_backup.py` to save the current configuration to `assets/backups/`.
 - **Pre-flight Check**: Always run `scripts/health_prober.py` before attempting configuration to ensure targets are online.
 - **Human-in-the-loop (CRITICAL)**: For core network changes (VLAN, Routing, ACL), the agent MUST present the planned command list to the user and wait for explicit confirmation before connecting to the device.
 - Reference [automation.md](references/automation.md) for Netmiko implementation details.
