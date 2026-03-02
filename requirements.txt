@@ -4,3 +4,4 @@ requests
 netmiko
 ipmitool
 requests-toolbelt
+speedtest-cli

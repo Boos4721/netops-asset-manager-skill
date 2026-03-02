@@ -33,9 +33,11 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 
 ### 🚀 Quick Start
 1. **Internal Deployment**: Install OpenClaw on a host within your internal management network.
-2. **Install Skill**: Clone this repository into your OpenClaw skills directory.
-3. **Safety First**: All core configuration changes require **Human-in-the-loop** confirmation.
-4. **Usage**: Tell your agent: *"Add a Huawei switch at 192.168.1.1 in the Data Center."*
+2. **System Setup**: Install system-level dependencies. See [dependencies.md](references/dependencies.md).
+3. **Python Setup**: Install Python requirements: `pip install -r requirements.txt`.
+4. **Install Skill**: Clone this repository into your OpenClaw skills directory.
+5. **Safety First**: All core configuration changes require **Human-in-the-loop** confirmation.
+6. **Usage**: Tell your agent: *"Add a Huawei switch at 192.168.1.1 in the Data Center."*
 
 ### ⚖️ License
 This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-NonCommercial 4.0 International)**.  
@@ -72,9 +74,11 @@ This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-
 
 ### 🚀 快速开始
 1. **内网部署**：在您的内网（管理网段）接入一台 OpenClaw 主机。
-2. **安装技能**：将此仓库克隆至 OpenClaw 的技能目录。
-3. **安全确认**：针对所有核心配置修改，Agent 会先列出命令清单，等待您输入“确认”后才会下发。
-4. **开始使用**：对 Agent 说：*"记录一台华为交换机，IP 是 192.168.1.1，在 A 座机房。"*
+2. **系统环境**：安装必要的系统依赖。参见 [dependencies.md](references/dependencies.md)。
+3. **Python 环境**：执行 `pip install -r requirements.txt` 安装依赖库。
+4. **安装技能**：将此仓库克隆至 OpenClaw 的技能目录。
+5. **安全确认**：针对所有核心配置修改，Agent 会先列出命令清单，等待您输入“确认”后才会下发。
+6. **开始使用**：对 Agent 说：*"记录一台华为交换机，IP 是 192.168.1.1，在 A 座机房。"*
 
 ### ⚖️ 开源协议
 本项目采用 **CC BY-NC 4.0 (知识共享署名-非商业性使用 4.0 国际许可协议)**。  
