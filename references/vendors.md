@@ -143,7 +143,7 @@
 - **Status Check**: `nvidia-smi`
 - **Driver Update (Primary - Official CN/HK)**:
   - Download from: `https://www.nvidia.cn/Download/index.aspx?lang=cn` or `https://www.nvidia.com/zh-hk/geforce/drivers/`
-  - Install: `chmod +x NVIDIA-Linux-x86_64-xxx.run && ./NVIDIA-Linux-x86_64-xxx.run`
+  - Install: `chmod +x NVIDIA-Linux-x86_64-xxx.run && ./NVIDIA-Linux-x86_64-xxx.run -s --no-questions --accept-license`
 - **Driver Install (Fallback - Package Manager)**: `apt install -y nvidia-driver` (Debian)
 - **Memory/Load Check**: `nvidia-smi --query-gpu=utilization.gpu,utilization.memory,memory.total,memory.free,memory.used --format=csv`
 - **Temperature**: `nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader`
