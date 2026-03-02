@@ -75,6 +75,29 @@
 - **LXC Enter**: `pct enter <vmid>`
 - **Backup**: `vzdump <vmid> --storage local --compress lzo`
 
+### Deep OSI-Layer Diagnostics
+
+#### Physical Layer (L1 - SFP/Cable)
+- **H3C/Huawei**: `display transceiver interface <Int> verbose` (Check Optical Power/Voltage)
+- **Cisco**: `show interfaces <Int> transceiver`
+- **Linux**: `ethtool <ethX>` (Speed/Duplex), `ethtool -m <ethX>` (Optical diagnostics)
+
+#### Data Link & Network Layer (L2/L3 - VLAN/ARP/Routing)
+- **MAC Table**: `display mac-address` (H3C/Huawei), `show mac address-table` (Cisco)
+- **LACP/Bonding**: `display link-aggregation summary`, `cat /proc/net/bonding/bond0`
+- **BGP/OSPF**: `display bgp peer`, `display ospf peer brief`
+- **STP**: `display stp brief`
+
+#### Session & Transport Layer (L4/L5 - Ports/Sessions)
+- **Linux Netstat**: `ss -antp` (Detailed TCP sessions), `ss -s` (Summary)
+- **Conntrack**: `conntrack -S` (Firewall session table stats)
+- **Load Balancer**: `haproxy -c -f /etc/haproxy/haproxy.cfg` (Check config)
+
+#### Presentation & Application Layer (L6/L7 - TLS/APIs)
+- **TLS Handshake**: `openssl s_client -connect <IP>:443 -tls1_2` (Test protocol support)
+- **HTTP/API**: `curl -o /dev/null -s -w "%{http_code}\n" <URL>` (Status code check)
+- **Log Pattern**: `awk '{print $9}' /var/log/nginx/access.log | sort | uniq -c` (HTTP code distribution)
+
 ### High-Performance Networking (HPC/GPU Clusters)
 
 #### NVIDIA Mellanox Infiniband (IB)

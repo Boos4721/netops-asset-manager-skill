@@ -13,6 +13,7 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 - **Intelligent Parsing**: Automatically extract IP, Vendor, Model, and Location from unstructured text or tables.
 - **Bilingual Reporting**: Support for automated daily reports and alerts in both English and Chinese.
 - **Bulk Import**: Native support for **Excel (.xlsx)** and **CSV** asset lists for rapid onboarding.
+- **Full-Stack Diagnostics**: Deep inspection capabilities across OSI layers, from **Physical (SFP/Cable)** to **Application (HTTP/API)**.
 - **Enterprise Server OOB**: Full support for **DELL iDRAC**, **Inspur ISBMC**, and **Supermicro IPMI**.
 - **Network Performance**: Integrated tools for **Speedtest**, **Route Tracing (MTR)**, and **Subnet Scanning (Nmap)**.
 - **HPC/GPU Clusters**: Monitoring for **Infiniband (IB)**, **RDMA**, and **NCCL** bandwidth tests for high-performance AI clusters.
@@ -56,6 +57,7 @@ This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-
 - **智能解析**：自动从凌乱的文本或表格中提取 IP、厂商、型号和位置信息。
 - **双语巡检**：支持自动化巡检日报及告警信息的“中英双语”展示与推送。
 - **批量导入**：原生支持 **Excel (.xlsx)** 与 **CSV** 资产清单批量入库。
+- **全栈链路诊断**：具备覆盖 OSI 七层模型的深层巡检能力，从**物理层 (SFP光功率/线缆)** 到 **应用层 (HTTP状态/API响应)**。
 - **企业服务器带外管理 (OOB)**：深度支持 **DELL iDRAC**、**浪潮 ISBMC** 及 **超微 IPMI**。
 - **网络性能监测**：集成 **Speedtest**、**路由追踪 (MTR)** 及 **网段扫描 (Nmap)**，用于资产发现与冲突检测。
 - **HPC/显卡集群**：支持 **Infiniband (IB)**、**RDMA** 状态监控及 **NCCL** 多卡带宽测试，适配 AI 算力集群。
