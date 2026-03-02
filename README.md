@@ -15,6 +15,7 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 - **Bulk Import**: Native support for **Excel (.xlsx)** and **CSV** asset lists for rapid onboarding.
 - **Full-Stack Diagnostics**: Deep inspection capabilities across OSI layers, from **Physical (SFP/Cable)** to **Application (HTTP/API)**.
 - **Enterprise Server OOB**: Full support for **DELL iDRAC**, **Inspur ISBMC**, and **Supermicro IPMI**.
+- **Wireless & Security**: Management support for **Wireless AC/AP**, **Firewalls (Fortinet, Palo Alto, Cisco ASA, H3C/Huawei Security)**, and **Gateways**.
 - **Network Performance**: Integrated tools for **Speedtest**, **Route Tracing (MTR)**, and **Subnet Scanning (Nmap)**.
 - **HPC/GPU Clusters**: Monitoring for **Infiniband (IB)**, **RDMA**, and **NCCL** bandwidth tests for high-performance AI clusters.
 - **Monitoring Integration**: Support for pushing metrics to **Zabbix** and exporting data for **Prometheus**.
@@ -59,6 +60,7 @@ This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-
 - **批量导入**：原生支持 **Excel (.xlsx)** 与 **CSV** 资产清单批量入库。
 - **全栈链路诊断**：具备覆盖 OSI 七层模型的深层巡检能力，从**物理层 (SFP光功率/线缆)** 到 **应用层 (HTTP状态/API响应)**。
 - **企业服务器带外管理 (OOB)**：深度支持 **DELL iDRAC**、**浪潮 ISBMC** 及 **超微 IPMI**。
+- **无线与安全设备管理**：支持 **无线 AC/AP** 状态巡检、**防火墙策略查询 (飞塔、Palo Alto、思科 ASA、华为/华三安全)** 及 **网关 NAT 维护**。
 - **网络性能监测**：集成 **Speedtest**、**路由追踪 (MTR)** 及 **网段扫描 (Nmap)**，用于资产发现与冲突检测。
 - **HPC/显卡集群**：支持 **Infiniband (IB)**、**RDMA** 状态监控及 **NCCL** 多卡带宽测试，适配 AI 算力集群。
 - **监控集成**：支持将巡检指标推送到 **Zabbix** 或导出为 **Prometheus** 指标格式。

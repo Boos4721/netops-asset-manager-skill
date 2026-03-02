@@ -136,7 +136,48 @@
 - **Repair**: `fsck.vfat -a /dev/sdX` or `xfs_repair /dev/sdX`
 - **Inodes Check**: `df -i`
 
-### Enterprise Server Out-of-Band (OOB) Management
+## Wireless & Security Device Commands (AC/AP/Firewall)
+
+### H3C / Huawei (Wireless AC & Security)
+- **AC Status**: `display wlan ap all`, `display wlan client`
+- **AP Management**: `wlan ap <name>`, `serial-id <sn>`
+- **Firewall Policy**: `display security-policy ip`
+- **Firewall Session**: `display firewall session table`
+- **Gateway/NAT**: `display nat session all`
+
+### Cisco (Wireless & Firepower/ASA)
+- **AC Client List**: `show client summary`
+- **AP Status**: `show ap summary`
+- **ASA Firewall**: `show conn`, `show access-list`
+- **ASA NAT**: `show nat`
+
+### Ruijie (Wireless & Firewall)
+- **AC Status**: `show ap-config summary`
+- **Client List**: `show sta-cap summary`
+- **Firewall Policy**: `show security-policy`
+
+### Fortinet (FortiGate)
+- **System Status**: `get system status`
+- **Policy Check**: `show firewall policy`
+- **Session List**: `get system session list`
+- **Interface Bandwidth**: `diagnose netlink interface list <int>`
+
+### Palo Alto (PAN-OS)
+- **Policy Check**: `show config running`
+- **Session Stats**: `show session info`
+- **System Resource**: `show system resources`
+
+### MikroTik (Wireless/CAPsMAN)
+- **CAPsMAN Status**: `/caps-man remote-cap print`
+- **Registration Table**: `/interface wireless registration-table print`
+- **Firewall Rules**: `/ip firewall filter print`
+- **NAT Rules**: `/ip firewall nat print`
+
+### TP-LINK / NETGEAR (WLAN)
+- **AP Status**: `show wireless ap`
+- **Clients**: `show wireless client`
+
+## Enterprise Server Out-of-Band (OOB) Management
 
 #### DELL iDRAC (Redfish/IPMI)
 - **Power Control**: `ipmitool -I lanplus -H <IP> -U <User> -P <Pass> chassis power on/off/cycle`
