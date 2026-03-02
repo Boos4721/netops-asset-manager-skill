@@ -3,7 +3,7 @@
 # NetOps Skill - Auto Environment Setup Script
 # Supports: Debian/Ubuntu, RedHat/CentOS/Rocky, Alpine Linux
 # Bilingual Support: Detects system locale to display EN or ZH
-# Network Smart: Detects IP location to use domestic mirrors (CN) for faster downloads
+# Network Smart: Detects IP location to use domestic mirrors (CN) for OS and PIP packages
 
 # Language Detection
 LANG_PREF="en"
@@ -28,7 +28,7 @@ echo "🔍 $(t '正在检测网络区域...' 'Detecting network location...')"
 IF_CONFIG_CO=$(curl -s --connect-timeout 5 https://ifconfig.co/country-iso || echo "UNKNOWN")
 if [ "$IF_CONFIG_CO" = "CN" ]; then
     IS_CN=true
-    echo "🇨🇳 $(t '检测到您位于中国大陆，将自动开启镜像加速。' 'Detected Mainland China location. Mirror acceleration enabled.')"
+    echo "🇨🇳 $(t '检测到您位于中国大陆，将自动开启系统源与 PIP 镜像加速。' 'Detected Mainland China. Enabling OS and PIP mirror acceleration.')"
 else
     echo "🌍 $(t '检测到非中国大陆区域，使用全球默认源。' 'Global location detected. Using default sources.')"
 fi
@@ -39,23 +39,36 @@ echo "🚀 $(t '正在启动 NetOps 环境安装程序...' 'Starting NetOps Envi
 if [ -f /etc/os-release ]; then
     . /etc/os-release
     OS=$ID
+    VERSION_ID=$VERSION_ID
 else
     OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 fi
 
-# OS-Specific Installers
+# OS-Specific Mirror & Installation
 install_debian() {
-    echo "📦 $(t '正在更新系统源...' 'Updating system sources...')"
     if [ "$IS_CN" = true ]; then
-        # Optional: Switch APT to TUNA mirror if needed, but keeping it safe for now
-        echo "💡 $(t '建议手动切换 APT 到清华或阿里镜像源以获得最佳速度。' 'Suggested: Switch APT to TUNA or Alibaba mirrors for best speed.')"
+        echo "⚡ $(t '正在切换 Debian/Ubuntu 系统源至阿里云镜像...' 'Switching Debian/Ubuntu sources to Alibaba mirror...')"
+        if [ "$OS" = "ubuntu" ]; then
+            sudo sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+            sudo sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+        elif [ "$OS" = "debian" ]; then
+            sudo sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+            sudo sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+        fi
     fi
+    echo "📦 $(t '正在更新系统软件包...' 'Updating system packages...')"
     sudo apt update
     sudo apt install -y python3 python3-pip python3-venv ipmitool mtr-tiny traceroute snmp smartmontools lm-sensors ethtool nmap iproute2 openssl curl
 }
 
 install_redhat() {
-    echo "📦 $(t '正在更新 YUM/DNF 源...' 'Updating YUM/DNF sources...')"
+    if [ "$IS_CN" = true ]; then
+        echo "⚡ $(t '正在配置 CentOS/RedHat 镜像插件...' 'Configuring CentOS/RedHat mirror plugins...')"
+        # For RHEL/CentOS, usually handled by fastmirrors or manually replacing .repo files
+        # We'll focus on the most common repo replacements if requested, but keep it safe
+        echo "💡 $(t '提示：RedHat/CentOS 建议配合阿里云 Repo 文件使用。' 'Note: RedHat/CentOS works best with Alibaba Repo files.')"
+    fi
+    echo "📦 $(t '正在安装系统依赖...' 'Installing system dependencies...')"
     if command -v dnf > /dev/null; then
         sudo dnf install -y python3 python3-pip ipmitool mtr traceroute net-snmp-utils smartmontools lm_sensors ethtool nmap iproute openssl curl
     else
@@ -64,16 +77,18 @@ install_redhat() {
 }
 
 install_alpine() {
-    echo "📦 $(t '正在更新 APK 源...' 'Updating APK sources...')"
     if [ "$IS_CN" = true ]; then
-        sudo sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories
+        echo "⚡ $(t '正在切换 Alpine 源至中科大镜像 (USTC)...' 'Switching Alpine sources to USTC mirror...')"
+        sudo sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
     fi
+    echo "📦 $(t '正在更新系统软件包...' 'Updating system packages...')"
+    sudo apk update
     sudo apk add python3 py3-pip ipmitool mtr traceroute net-snmp-tools smartmontools lm-sensors ethtool nmap iproute2 openssl curl
 }
 
-# 1. Install System Dependencies & Python/Pip
+# Execute Installation
 case "$OS" in
-    ubuntu|debian|proxmox|kali)
+    ubuntu|debian|proxmox|kali|raspbian)
         install_debian
         ;;
     centos|rhel|rocky|alma|fedora)
@@ -83,7 +98,7 @@ case "$OS" in
         install_alpine
         ;;
     *)
-        echo "❌ $(t '不支持的操作系统' 'Unsupported OS'): $OS. $(t '请手动安装依赖。' 'Please install dependencies manually.')"
+        echo "❌ $(t '不支持的操作系统' 'Unsupported OS'): $OS."
         exit 1
         ;;
 esac
@@ -96,20 +111,20 @@ fi
 
 # PIP Setup with Mirror Support
 if ! command -v pip3 > /dev/null && ! python3 -m pip --version > /dev/null; then
-    echo "⚠️ $(t '未找到 Pip。尝试为 Python 3 安装 Pip...' 'Pip not found. Attempting to install pip for Python 3...')"
+    echo "⚠️ $(t '未找到 Pip。尝试从国内源安装 Pip...' 'Pip not found. Attempting to install pip from mirror...')"
     GET_PIP_URL="https://bootstrap.pypa.io/get-pip.py"
     if [ "$IS_CN" = true ]; then
         GET_PIP_URL="https://mirrors.aliyun.com/pypi/get-pip.py"
     fi
-    curl "$GET_PIP_URL" -o get-pip.py
+    curl -s "$GET_PIP_URL" -o get-pip.py
     python3 get-pip.py --user
     rm get-pip.py
 fi
 
 # Configure PIP Mirror for CN users
 if [ "$IS_CN" = true ]; then
-    echo "⚡ $(t '正在配置 PIP 国内加速源 (阿里云)...' 'Configuring PIP domestic mirror (Alibaba)...')"
-    python3 -m pip config set global.index-url https://mirrors.aliyun.com/pypi/simple/
+    echo "⚡ $(t '正在配置 PIP 国内加速源 (中科大)...' 'Configuring PIP domestic mirror (USTC)...')"
+    python3 -m pip config set global.index-url https://pypi.mirrors.ustc.edu.cn/simple/
 fi
 
 # 3. Install Python Requirements
@@ -118,8 +133,7 @@ if [ -f "requirements.txt" ]; then
     python3 -m pip install --upgrade pip
     python3 -m pip install -r requirements.txt
 else
-    echo "⚠️ $(t '当前目录未找到 requirements.txt！' 'requirements.txt not found in current directory!')"
+    echo "⚠️ $(t '未找到 requirements.txt。' 'requirements.txt not found.')"
 fi
 
 echo "✅ $(t '环境安装完成！' 'Environment Setup Complete!')"
-echo "$(t '下一步：运行 \"python3 scripts/dashboard.py\" 启动资产看板。' 'Next step: Run \"python3 scripts/dashboard.py\" to start the asset dashboard.')"
