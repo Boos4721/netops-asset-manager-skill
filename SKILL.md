@@ -18,12 +18,14 @@ This skill transforms unstructured infrastructure information into a structured 
 ### 1. Asset Ingestion
 When a user provides asset information:
 - **Bulk Import**: Use `scripts/bulk_importer.py` to process Excel (.xlsx) or CSV files.
+- **Discovery**: Use `scripts/ip_discover.py` to scan subnets for new or unauthorized devices.
 - **External Integration**: Support importing assets from **NetBox** via `scripts/netbox_importer.py`. Requires NetBox API URL and Token.
 - For unstructured text, use LLM extraction to identify key fields.
 - **Auto-Verification**: After adding assets, use `scripts/health_prober.py` to check if the devices are reachable (Ping/SSH).
 
-### 4. Reporting
+### 4. Reporting & Integration
 - **Daily Summaries**: Use `scripts/daily_report.py` to aggregate hardware, storage, and GPU status into a single Markdown report.
+- **External Monitoring**: Use `scripts/monitoring_bridge.py` to push critical metrics to enterprise systems like Zabbix or Prometheus.
 - **Notifications**: Send reports via Bark, DingTalk, or Feishu using `scripts/notifier.py`.
 - Categorize vendors accurately:
   - **H3C**: Comware-based commands.

@@ -75,6 +75,20 @@
 - **LXC Enter**: `pct enter <vmid>`
 - **Backup**: `vzdump <vmid> --storage local --compress lzo`
 
+### High-Performance Networking (HPC/GPU Clusters)
+
+#### NVIDIA Mellanox Infiniband (IB)
+- **Adapter Status**: `ibstat` or `ibstatus`
+- **HCA Health**: `ibv_devinfo`
+- **Port Performance**: `perfquery`
+- **Fabric Discovery**: `ibnetdiscover`
+- **Subnet Manager Status**: `sminfo`
+
+#### RDMA & NCCL (GPU-to-GPU)
+- **RDMA Stats**: `rdma statistics show link`
+- **NCCL Bandwidth Test**: `NCCL_DEBUG=INFO ./nccl-tests/build/all_reduce_perf -b 8 -e 256M -f 2 -g <gpu_count>`
+- **RoCE Configuration**: `show_gids`
+
 ### Storage & Filesystem Maintenance
 
 #### Software RAID (mdadm)

@@ -14,8 +14,10 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 - **Bilingual Reporting**: Support for automated daily reports and alerts in both English and Chinese.
 - **Bulk Import**: Native support for **Excel (.xlsx)** and **CSV** asset lists for rapid onboarding.
 - **Enterprise Server OOB**: Full support for **DELL iDRAC**, **Inspur ISBMC**, and **Supermicro IPMI**.
-- **Network Performance**: Integrated tools for **Speedtest** and **Route Tracing (MTR)** to diagnose IDC bandwidth and latency issues.
-- **Service Security**: Automated **SSL/TLS Certificate expiry tracking** to prevent service downtime.
+- **Network Performance**: Integrated tools for **Speedtest**, **Route Tracing (MTR)**, and **Subnet Scanning (Nmap)**.
+- **HPC/GPU Clusters**: Monitoring for **Infiniband (IB)**, **RDMA**, and **NCCL** bandwidth tests for high-performance AI clusters.
+- **Monitoring Integration**: Support for pushing metrics to **Zabbix** and exporting data for **Prometheus**.
+- **Service Security**: Automated **SSL/TLS Certificate expiry tracking**.
 - **DevOps Capabilities**: Streamlined maintenance for **Docker**, **Kubernetes (K8s)**, and **Nginx**.
 - **Virtualization Support**: Advanced management for **VMware ESXi**, **OpenStack**, **QEMU/KVM**, and **LXC**.
 - **Storage Maintenance**: Management of **RAID (mdadm)**, **iSCSI**, **NFS/SMB** mounts, and common filesystems.
@@ -55,8 +57,10 @@ This project is licensed under the **CC BY-NC 4.0 (Creative Commons Attribution-
 - **双语巡检**：支持自动化巡检日报及告警信息的“中英双语”展示与推送。
 - **批量导入**：原生支持 **Excel (.xlsx)** 与 **CSV** 资产清单批量入库。
 - **企业服务器带外管理 (OOB)**：深度支持 **DELL iDRAC**、**浪潮 ISBMC** 及 **超微 IPMI**。
-- **网络性能监测**：集成 **Speedtest** 与 **路由追踪 (MTR)** 脚本，用于诊断 IDC 链路带宽及丢包抖动。
-- **业务安全保障**：支持 **SSL/TLS 证书到期自动监测**，防止因证书过期导致的业务中断。
+- **网络性能监测**：集成 **Speedtest**、**路由追踪 (MTR)** 及 **网段扫描 (Nmap)**，用于资产发现与冲突检测。
+- **HPC/显卡集群**：支持 **Infiniband (IB)**、**RDMA** 状态监控及 **NCCL** 多卡带宽测试，适配 AI 算力集群。
+- **监控集成**：支持将巡检指标推送到 **Zabbix** 或导出为 **Prometheus** 指标格式。
+- **业务安全保障**：支持 **SSL/TLS 证书到期自动监测**。
 - **DevOps 运维**：集成 **Docker**、**Kubernetes** 及 **Nginx** 的自动化维护能力。
 - **虚拟化管理**：支持 **VMware ESXi**、**OpenStack**、**QEMU/KVM** 及 **LXC**。
 - **存储维护**：支持 **RAID**、**iSCSI**、**NFS/SMB** 及常见文件系统维护。
