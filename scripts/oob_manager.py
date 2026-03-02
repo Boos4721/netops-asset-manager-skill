@@ -28,6 +28,11 @@ def get_server_health_summary(host, user, password):
     events = run_ipmi_cmd(host, user, password, "sel list last 5")
     health['recent_events'] = events.get('output', 'N/A').strip()
     
+    # iDRAC Specific: Get System Info via OEM command
+    # Useful for DELL users
+    idrac_info = run_ipmi_cmd(host, user, password, "mc info")
+    health['bmc_info'] = idrac_info.get('output', 'N/A').strip()
+    
     return health
 
 if __name__ == "__main__":
