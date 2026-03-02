@@ -91,8 +91,8 @@ if __name__ == "__main__":
         sys.exit(0)
 
     if target == "bark":
-        title = "NetOps Report" if lang == "en" else "NetOps巡检日报"
-        notifier.send_bark(cred, title, "Server check completed")
+        title = t("NetOps 巡检日报", "NetOps Report")
+        notifier.send_bark(cred, title, t("服务器健康检查已完成", "Server check completed"))
     elif target == "dingtalk":
         notifier.send_dingtalk(cred, report_content, secret=secret)
     elif target == "feishu":
