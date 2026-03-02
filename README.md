@@ -15,7 +15,7 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 - **Bulk Import**: Native support for **Excel (.xlsx)** and **CSV** asset lists for rapid onboarding.
 - **Full-Stack Diagnostics**: Deep inspection capabilities across OSI layers, from **Physical (SFP/Cable)** to **Application (HTTP/API)**.
 - **Enterprise Server OOB**: Full support for **DELL iDRAC**, **Inspur ISBMC**, and **Supermicro IPMI**.
-- **Wireless & Security**: Management support for **Wireless AC/AP**, **Firewalls (Fortinet, Palo Alto, Cisco ASA, H3C/Huawei Security)**, and **Gateways (including Ruijie EG)**.
+- **Wireless, Security & Routing**: Support for **AC/AP**, **Firewalls** (Fortinet, Palo Alto, etc.), **Gateways** (including Ruijie EG), and core routing protocols.
 - **Cloud Native & DevOps**: Streamlined maintenance for **Docker**, **Kubernetes (K8s)**, and **Nginx**.
 - **Virtualization Support**: Advanced management for **VMware ESXi**, **OpenStack**, **QEMU/KVM**, and **LXC** (Proxmox compatible).
 - **GPU Maintenance**: Support for **NVIDIA** and **AMD** driver installation (official CN/HK sources) and health monitoring.
@@ -53,7 +53,7 @@ This project is licensed under the **CC BY-NC 4.0**. **Commercial use is strictl
 - **批量导入**：原生支持 **Excel (.xlsx)** 与 **CSV** 资产清单批量入库。
 - **全栈链路诊断**：具备覆盖 OSI 七层模型的深层巡检能力，从物理层（SFP/线缆）到应用层（HTTP/API）。
 - **企业服务器带外 (OOB)**：深度支持 **DELL iDRAC**、**浪潮 ISBMC** 及 **超微 IPMI**。
-- **无线、安全与路由**：支持 **AC/AP**、**防火墙（飞塔、Palo Alto 等）**及**网关（含锐捷 EG 系列）**和核心路由协议。
+- **无线、安全与路由**：支持 **AC/AP**、**防火墙**（飞塔、Palo Alto 等）、**网关**（含锐捷 EG 系列）及核心路由协议。
 - **DevOps 与云原生**：集成 **Docker**、**Kubernetes** 及 **Nginx** 的自动化维护。
 - **虚拟化管理**：支持 **VMware ESXi**、**OpenStack**、**QEMU/KVM** 及 **LXC** (Proxmox 兼容)。
 - **显卡运维 (GPU)**：支持 **NVIDIA (N卡)** 与 **AMD (A卡)** 官网驱动静默安装及高温/显存监控。
