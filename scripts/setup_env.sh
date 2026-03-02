@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # NetOps Skill - Auto Environment Setup Script
-# Supports: Debian/Ubuntu, RedHat/CentOS/Rocky, Alpine Linux
+# Supports: Debian/Ubuntu (Standard & DEB822), RedHat/CentOS/Rocky, Alpine Linux
 # Bilingual Support: Detects system locale to display EN or ZH
 # Network Smart: Detects IP location to use domestic mirrors (CN) for OS and PIP packages
 
@@ -47,13 +47,24 @@ fi
 # OS-Specific Mirror & Installation
 install_debian() {
     if [ "$IS_CN" = true ]; then
-        echo "⚡ $(t '正在切换 Debian/Ubuntu 系统源至阿里云镜像...' 'Switching Debian/Ubuntu sources to Alibaba mirror...')"
-        if [ "$OS" = "ubuntu" ]; then
-            sudo sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
-            sudo sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
-        elif [ "$OS" = "debian" ]; then
-            sudo sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
-            sudo sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+        echo "⚡ $(t '正在切换系统源至镜像站...' 'Switching system sources to mirror...')"
+        
+        # Support for Ubuntu DEB822 format (Ubuntu 24.04+)
+        if [ "$OS" = "ubuntu" ] && [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+            echo "📦 $(t '检测到 DEB822 格式源 (Ubuntu 24.04+)，正在执行替换...' 'Detected DEB822 format (Ubuntu 24.04+), applying replacement...')"
+            sudo sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list.d/ubuntu.sources
+            sudo sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list.d/ubuntu.sources
+        fi
+
+        # Legacy sources.list support
+        if [ -f /etc/apt/sources.list ]; then
+            if [ "$OS" = "ubuntu" ]; then
+                sudo sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+                sudo sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+            elif [ "$OS" = "debian" ]; then
+                sudo sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+                sudo sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+            fi
         fi
     fi
     echo "📦 $(t '正在更新系统软件包...' 'Updating system packages...')"
@@ -62,12 +73,6 @@ install_debian() {
 }
 
 install_redhat() {
-    if [ "$IS_CN" = true ]; then
-        echo "⚡ $(t '正在配置 CentOS/RedHat 镜像插件...' 'Configuring CentOS/RedHat mirror plugins...')"
-        # For RHEL/CentOS, usually handled by fastmirrors or manually replacing .repo files
-        # We'll focus on the most common repo replacements if requested, but keep it safe
-        echo "💡 $(t '提示：RedHat/CentOS 建议配合阿里云 Repo 文件使用。' 'Note: RedHat/CentOS works best with Alibaba Repo files.')"
-    fi
     echo "📦 $(t '正在安装系统依赖...' 'Installing system dependencies...')"
     if command -v dnf > /dev/null; then
         sudo dnf install -y python3 python3-pip ipmitool mtr traceroute net-snmp-utils smartmontools lm_sensors ethtool nmap iproute openssl curl
@@ -128,12 +133,20 @@ if [ "$IS_CN" = true ]; then
 fi
 
 # 3. Install Python Requirements
-echo "🐍 $(t '正在安装 Python 依赖库...' 'Installing Python library requirements...')"
-if [ -f "requirements.txt" ]; then
+# Resolve root directory for requirements.txt
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+REPO_ROOT=$(dirname "$SCRIPT_DIR")
+
+echo "🐍 $(t '正在从根目录安装 Python 依赖库...' 'Installing Python library requirements from root...')"
+if [ -f "$REPO_ROOT/requirements.txt" ]; then
     python3 -m pip install --upgrade pip
-    python3 -m pip install -r requirements.txt
+    python3 -m pip install -r "$REPO_ROOT/requirements.txt"
 else
-    echo "⚠️ $(t '未找到 requirements.txt。' 'requirements.txt not found.')"
+    echo "⚠️ $(t '根目录下未找到 requirements.txt。' 'requirements.txt not found in root directory.')"
+    # Fallback to current dir
+    if [ -f "requirements.txt" ]; then
+        python3 -m pip install -r "requirements.txt"
+    fi
 fi
 
 echo "✅ $(t '环境安装完成！' 'Environment Setup Complete!')"
