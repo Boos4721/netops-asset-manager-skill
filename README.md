@@ -14,8 +14,8 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 - **Bilingual Reporting**: Support for automated daily reports and alerts in both English and Chinese (Supports Bark, DingTalk, Feishu).
 - **Bulk Import**: Native support for **Excel (.xlsx)** and **CSV** asset lists for rapid onboarding.
 - **Full-Stack Diagnostics**: Deep inspection capabilities across OSI layers, from **Physical (SFP/Cable)** to **Application (HTTP/API)**.
-- **Enterprise Server OOB**: Full support for **DELL iDRAC**, **Inspur ISBMC**, and **Supermicro IPMI**.
-- **Wireless, Security & Routing**: Support for **AC/AP**, **Firewalls** (Fortinet, Palo Alto, etc.), **Gateways** (including Ruijie EG), and core routing protocols.
+- **Enterprise Server OOB**: Full support for **DELL iDRAC (inc. racadm)**, **Inspur ISBMC**, and **Supermicro IPMI**.
+- **Wireless, Security & Routing**: Support for **AC/AP**, **Firewalls** (Fortinet, Palo Alto, etc.), **Gateways** (including Ruijie EG), and core routing protocols (BGP/OSPF).
 - **Cloud Native & DevOps**: Streamlined maintenance for **Docker**, **Kubernetes (K8s)**, and **Nginx**.
 - **Virtualization Support**: Advanced management for **VMware ESXi**, **OpenStack**, **QEMU/KVM**, and **LXC** (Proxmox compatible).
 - **GPU Maintenance**: Support for **NVIDIA** and **AMD** driver installation (official CN/HK sources) and health monitoring.
@@ -30,7 +30,7 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 
 ### 🚀 Quick Start
 1. **Internal Deployment**: Install OpenClaw on a host within your internal management network.
-2. **Auto Setup**: Run the integrated setup script to install Python, Pip, and all dependencies automatically (supports location-based mirror acceleration):
+2. **Auto Setup**: Run the integrated setup script to install Python, Pip, and all dependencies automatically (supports location-based mirror acceleration and Ubuntu DEB822):
    ```bash
    chmod +x scripts/setup_env.sh
    ./scripts/setup_env.sh
@@ -52,8 +52,8 @@ This project is licensed under the **CC BY-NC 4.0**. **Commercial use is strictl
 - **双语巡检与告警**：支持自动化巡检日报及告警信息的“中英双语”推送（支持 Bark、钉钉、飞书）。
 - **批量导入**：原生支持 **Excel (.xlsx)** 与 **CSV** 资产清单批量入库。
 - **全栈链路诊断**：具备覆盖 OSI 七层模型的深层巡检能力，从物理层（SFP/线缆）到应用层（HTTP/API）。
-- **企业服务器带外 (OOB)**：深度支持 **DELL iDRAC**、**浪潮 ISBMC** 及 **超微 IPMI**。
-- **无线、安全与路由**：支持 **AC/AP**、**防火墙**（飞塔、Palo Alto 等）、**网关**（含锐捷 EG 系列）及核心路由协议。
+- **企业服务器带外 (OOB)**：深度支持 **DELL iDRAC (含 racadm)**、**浪潮 ISBMC** 及 **超微 IPMI**。
+- **无线、安全与路由**：支持 **AC/AP**、**防火墙**（飞塔、Palo Alto 等）、**网关**（含锐捷 EG 系列）及核心路由协议（BGP/OSPF）。
 - **DevOps 与云原生**：集成 **Docker**、**Kubernetes** 及 **Nginx** 的自动化维护。
 - **虚拟化管理**：支持 **VMware ESXi**、**OpenStack**、**QEMU/KVM** 及 **LXC** (Proxmox 兼容)。
 - **显卡运维 (GPU)**：支持 **NVIDIA (N卡)** 与 **AMD (A卡)** 官网驱动静默安装及高温/显存监控。
@@ -63,12 +63,12 @@ This project is licensed under the **CC BY-NC 4.0**. **Commercial use is strictl
 
 ### 🛠️ 目录结构
 - `SKILL.md`: 核心流程定义与 Agent 执行指令。
-- `scripts/`: Python 工具集（资产管理、硬件巡检、Web 看板等）及 `setup_env.sh` 环境初始化脚本。
+- `scripts/`: Python 工具集（资产管理、硬件巡检、Web 看板、带外管理等）及 `setup_env.sh` 环境初始化脚本。
 - `references/`: 厂商命令库、系统依赖指南及自动化执行参考文档。
 
 ### 🚀 快速开始
 1. **内网部署**：在您的内网接入一台 OpenClaw 主机。
-2. **自动环境搭建**：运行内置脚本自动安装环境（支持根据 IP 归属地自动切换国内镜像源）：
+2. **自动环境搭建**：运行内置脚本自动安装环境（支持根据 IP 归属地自动切换国内镜像源，适配 Ubuntu DEB822）：
    ```bash
    chmod +x scripts/setup_env.sh
    ./scripts/setup_env.sh
