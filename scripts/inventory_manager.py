@@ -2,9 +2,10 @@ import json
 import os
 import re
 
-# Resolve paths relative to the skill directory
-SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-INVENTORY_FILE = os.path.join(SKILL_DIR, 'assets/inventory.json')
+# Resolve paths relative to the project root (where scripts/ folder lives)
+SCRIPTS_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPTS_DIR)
+INVENTORY_FILE = os.path.join(PROJECT_ROOT, 'assets/inventory.json')
 
 def load_inventory():
     if not os.path.exists(os.path.dirname(INVENTORY_FILE)):
@@ -18,28 +19,30 @@ def load_inventory():
     return []
 
 def save_inventory(data):
+    if not os.path.exists(os.path.dirname(INVENTORY_FILE)):
+        os.makedirs(os.path.dirname(INVENTORY_FILE))
     with open(INVENTORY_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 def validate_ip(ip):
-    return re.match(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', ip)
+    return re.match(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', str(ip).strip())
 
 def add_device(ip, vendor, name, model=None, location=None, tags=None):
+    ip = str(ip).strip()
     if not validate_ip(ip):
         return {"error": f"Invalid IP address: {ip}"}
     
     inventory = load_inventory()
-    # Update if exists, otherwise add
     for device in inventory:
         if device['ip'] == ip:
-            device.update({"vendor": vendor, "name": name, "model": model, "location": location, "tags": tags or []})
+            device.update({"vendor": str(vendor).upper(), "name": str(name), "model": model, "location": location, "tags": tags or []})
             save_inventory(inventory)
             return {"status": "updated", "device": device}
             
     new_device = {
         "ip": ip,
-        "vendor": vendor.upper(),
-        "name": name,
+        "vendor": str(vendor).upper(),
+        "name": str(name),
         "model": model,
         "location": location,
         "tags": tags or []
@@ -51,16 +54,13 @@ def add_device(ip, vendor, name, model=None, location=None, tags=None):
 def search_devices(query):
     inventory = load_inventory()
     results = []
-    q = query.lower()
+    q = str(query).lower()
     for d in inventory:
-        if q in d['ip'] or q in d['name'].lower() or q in d.get('location', '').lower() or q in d['vendor'].lower():
+        if q in str(d['ip']) or q in str(d['name']).lower() or q in str(d.get('location', '')).lower() or q in str(d['vendor']).lower():
             results.append(d)
     return results
 
 if __name__ == "__main__":
     import sys
-    if len(sys.argv) > 1:
-        # Simple CLI for adding via exec if needed
-        # Usage: python3 inventory_manager.py add <ip> <vendor> <name>
-        if sys.argv[1] == "add":
-            print(add_device(sys.argv[2], sys.argv[3], sys.argv[4]))
+    if len(sys.argv) > 4 and sys.argv[1] == "add":
+        print(json.dumps(add_device(sys.argv[2], sys.argv[3], sys.argv[4]), indent=2, ensure_ascii=False))
