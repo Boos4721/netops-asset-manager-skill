@@ -58,16 +58,15 @@ Dashboard 采用前后端分离的架构：
     ```bash
     nohup python3 /root/clawd/skills/netops-asset-manager/scripts/api_server.py > /dev/null 2>&1 &
     ```
-2.  **启动前端 Web 服务** (例如指定端口 18793)：
+2.  **启动前端 Web 服务** (默认端口 8080)：
     ```bash
-    cd /root/clawd/skills/netops-asset-manager/ui
-    nohup python3 -m http.server 18793 > /dev/null 2>&1 &
+    pm2 start python3 --name "netops-ui" --interpreter python3 -- -m http.server 8080 --directory /root/clawd/skills/netops-asset-manager/ui
     ```
 
-访问地址通常为：`http://<服务器IP>:18793/index.html`。
+访问地址通常为：`http://<服务器IP>:8080/index.html`。
 
 ## 4. 常见问题排查
 
-*   **页面白屏或显示 404**：检查启动 `http.server` 时的执行路径是否为 `ui/` 目录。
+*   **页面白屏或显示 404**：检查启动 `http.server` 时的执行路径是否正确指向了 `ui/` 目录。
 *   **登录无反应/报错**：检查后端 API（8081端口）是否正常运行；检查 `api_server.py` 内配置的 PostgreSQL 用户名密码是否与实际匹配。
 *   **AI 助手无法添加设备**：确保服务器有写入 `assets/inventory.json` 的权限。前端与后端的跨域请求已通过动态获取 `window.location.hostname` 解决。
