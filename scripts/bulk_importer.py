@@ -7,6 +7,22 @@ import sys
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INVENTORY_FILE = os.path.join(SKILL_DIR, 'assets/inventory.json')
 
+# Map vendor names to Netmiko device types
+VENDOR_DRIVERS = {
+    "H3C": "hp_comware",
+    "HUAWEI": "huawei",
+    "CISCO": "cisco_ios",
+    "MIKROTIK": "mikrotik_routeros",
+    "RUIJIE": "ruijie_os",
+    "DCN": "dcn_os",
+    "TP-LINK": "tplink_jetstream",
+    "NETGEAR": "netgear_prosafe",
+    "LINUX": "linux"
+}
+
+def get_driver(vendor):
+    return VENDOR_DRIVERS.get(str(vendor).upper(), "autodetect")
+
 def bulk_import(file_path):
     """
     Import assets from Excel (.xlsx) or CSV.
@@ -56,6 +72,7 @@ def bulk_import(file_path):
                 "location": str(dev.get('location', '')) if not pd.isna(dev.get('location')) else '',
                 "sn": sn,
                 "server": server,
+                "driver": get_driver(dev.get('vendor', 'UNKNOWN')),
                 "tags": []
             }
             inventory_dict[clean_dev['ip']] = clean_dev
