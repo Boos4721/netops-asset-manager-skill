@@ -52,11 +52,18 @@ Dashboard 采用前后端分离的架构：
 3.  **Python 依赖**：后端需安装 `psycopg2` 等模块。
 
 ### 启动服务
-启动 Dashboard 需要同时拉起两个服务：
+
+**推荐方式（自动启动）：**
+在运行 `scripts/setup_env.sh` 初始化环境的最后一步，脚本会询问您是否启动 Dashboard：
+`❓ 是否启动 NetOps Dashboard (API与Web界面)? [Y/n]`
+输入 `Y` 或直接回车，系统将通过 PM2 自动为您拉起前后端服务。
+
+**手动启动方式：**
+如果您跳过了自动启动，也可以手动通过 PM2 拉起这两个服务：
 
 1.  **启动后端 API 服务** (默认端口 8081)：
     ```bash
-    nohup python3 /root/clawd/skills/netops-asset-manager/scripts/api_server.py > /dev/null 2>&1 &
+    pm2 start python3 --name "netops-api" --interpreter python3 -- /root/clawd/skills/netops-asset-manager/scripts/api_server.py
     ```
 2.  **启动前端 Web 服务** (默认端口 8080)：
     ```bash
