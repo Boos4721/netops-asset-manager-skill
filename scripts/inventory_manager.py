@@ -43,7 +43,7 @@ VENDOR_DRIVERS = {
 def get_driver(vendor):
     return VENDOR_DRIVERS.get(str(vendor).upper(), "autodetect")
 
-def add_device(ip, vendor, name, model=None, location=None, tags=None):
+def add_device(ip, vendor, name, model=None, location=None, tags=None, sn=None, server=None):
     ip = str(ip).strip()
     vendor = str(vendor).upper()
     if not validate_ip(ip):
@@ -58,6 +58,8 @@ def add_device(ip, vendor, name, model=None, location=None, tags=None):
                 "model": model, 
                 "location": location, 
                 "tags": tags or [],
+                "sn": sn,
+                "server": server,
                 "driver": get_driver(vendor)
             })
             save_inventory(inventory)
@@ -70,6 +72,8 @@ def add_device(ip, vendor, name, model=None, location=None, tags=None):
         "model": model,
         "location": location,
         "tags": tags or [],
+        "sn": sn,
+        "server": server,
         "driver": get_driver(vendor)
     }
     inventory.append(new_device)

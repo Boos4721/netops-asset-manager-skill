@@ -45,12 +45,17 @@ def bulk_import(file_path):
                 continue
             
             # Clean data
+            sn = str(dev.get('sn', '')).strip() if not pd.isna(dev.get('sn')) else ''
+            server = str(dev.get('server', '')).strip() if not pd.isna(dev.get('server')) else ''
+            
             clean_dev = {
                 "name": str(dev.get('name', 'Unknown')),
                 "ip": str(dev.get('ip')).strip(),
                 "vendor": str(dev.get('vendor', 'UNKNOWN')).upper(),
                 "model": str(dev.get('model', '')) if not pd.isna(dev.get('model')) else '',
                 "location": str(dev.get('location', '')) if not pd.isna(dev.get('location')) else '',
+                "sn": sn,
+                "server": server,
                 "tags": []
             }
             inventory_dict[clean_dev['ip']] = clean_dev
