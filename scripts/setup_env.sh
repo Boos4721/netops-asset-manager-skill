@@ -134,11 +134,31 @@ else
     fi
 fi
 
-# 4. Install PM2 for Process Management
+# 4. Install PM2 for Process Management (supports Debian/Ubuntu, RHEL/CentOS, Alpine)
 if ! command -v pm2 > /dev/null; then
     echo "📦 $(t '正在安装 PM2...' 'Installing PM2...')"
-    # Node.js is assumed to be provided by OpenClaw environment
-    sudo npm install -g pm2
+    
+    if command -v apt-get >/dev/null 2>&1; then
+        # Debian/Ubuntu
+        sudo apt-get update
+        sudo apt-get install -y npm
+        sudo npm install -g pm2
+    elif command -v yum >/dev/null 2>&1; then
+        # RHEL/CentOS
+        sudo yum install -y npm
+        sudo npm install -g pm2
+    elif command -v apk >/dev/null 2>&1; then
+        # Alpine
+        sudo apk add --no-cache nodejs npm
+        sudo npm install -g pm2
+    else
+        # Fallback: assume Node.js is provided
+        sudo npm install -g pm2
+    fi
+    
+    # Setup PM2 to start on boot
+    sudo pm2 startup 2>/dev/null || true
+    pm2 save 2>/dev/null || true
 fi
 
 # 5. Optional: Start Dashboard
