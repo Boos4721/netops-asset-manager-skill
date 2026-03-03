@@ -12,6 +12,7 @@ import hardware_check
 import storage_prober
 import gpu_manager
 import notifier
+import ssl_check
 
 def generate_report(lang="bilingual"):
     """
@@ -26,6 +27,14 @@ def generate_report(lang="bilingual"):
     st = storage_prober.get_storage_report()
     # 3. GPU
     gpu_alerts = gpu_manager.check_gpu_alerts()
+    # 4. SSL Monitoring (Loads from local assets/ssl_domains.txt if exists)
+    ssl_domains = []
+    ssl_config_path = os.path.join(PROJECT_ROOT, 'assets/ssl_domains.txt')
+    if os.path.exists(ssl_config_path):
+        with open(ssl_config_path, 'r') as f:
+            ssl_domains = [line.strip() for line in f if line.strip()]
+    
+    ssl_reports = [ssl_check.get_ssl_expiry(d) for d in ssl_domains]
 
     # Helpers for conditional content
     def t(zh, en):
@@ -72,7 +81,16 @@ def generate_report(lang="bilingual"):
             msg_zh = msg_en.replace("ALERT:", "告警:").replace("High Temperature", "温度过高").replace("Out of Memory", "显存溢出")
             content += f"❌ {t(msg_zh, msg_en)}\n"
     else:
-        content += f"✅ {t('All GPUs are healthy', '所有 GPU 状态正常')}。\n"
+        content += f"✅ {t('All GPUs are healthy', '所有 GPU 状态正常')}。\n\n"
+
+    # Section: SSL
+    content += f"### 🔐 {t('SSL Certificates', 'SSL 证书监控')}\n"
+    for r in ssl_reports:
+        if "error" in r:
+            content += f"- `{r['hostname']}`: ⚠️ {t('Check Failed', '检查失败')} ({r['error']})\n"
+        else:
+            status_icon = "✅" if r['days_left'] > 15 else "🚨"
+            content += f"- `{r['hostname']}`: {status_icon} {r['days_left']} {t('days left', '天后过期')} ({r['expiry_date']})\n"
     
     return content
 

@@ -27,25 +27,50 @@ def save_inventory(data):
 def validate_ip(ip):
     return re.match(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', str(ip).strip())
 
+# Map vendor names to Netmiko device types
+VENDOR_DRIVERS = {
+    "H3C": "hp_comware",
+    "HUAWEI": "huawei",
+    "CISCO": "cisco_ios",
+    "MIKROTIK": "mikrotik_routeros",
+    "RUIJIE": "ruijie_os",
+    "DCN": "dcn_os",
+    "TP-LINK": "tplink_jetstream",
+    "NETGEAR": "netgear_prosafe",
+    "LINUX": "linux"
+}
+
+def get_driver(vendor):
+    return VENDOR_DRIVERS.get(str(vendor).upper(), "autodetect")
+
 def add_device(ip, vendor, name, model=None, location=None, tags=None):
     ip = str(ip).strip()
+    vendor = str(vendor).upper()
     if not validate_ip(ip):
         return {"error": f"Invalid IP address: {ip}"}
     
     inventory = load_inventory()
     for device in inventory:
         if device['ip'] == ip:
-            device.update({"vendor": str(vendor).upper(), "name": str(name), "model": model, "location": location, "tags": tags or []})
+            device.update({
+                "vendor": vendor, 
+                "name": str(name), 
+                "model": model, 
+                "location": location, 
+                "tags": tags or [],
+                "driver": get_driver(vendor)
+            })
             save_inventory(inventory)
             return {"status": "updated", "device": device}
             
     new_device = {
         "ip": ip,
-        "vendor": str(vendor).upper(),
+        "vendor": vendor,
         "name": str(name),
         "model": model,
         "location": location,
-        "tags": tags or []
+        "tags": tags or [],
+        "driver": get_driver(vendor)
     }
     inventory.append(new_device)
     save_inventory(inventory)

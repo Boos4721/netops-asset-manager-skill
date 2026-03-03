@@ -1,45 +1,41 @@
+import os
+import sys
 import subprocess
 import json
-import socket
-import os
 
-def get_physical_layer(interface="eth0"):
-    """Check L1: Interface speed and link"""
+def check_l1_link(interface):
+    """L1: Physical Link Check"""
     try:
-        output = subprocess.check_output(['ethtool', interface]).decode('utf-8')
-        speed = "Unknown"
-        link = "Unknown"
-        for line in output.split('\n'):
-            if "Speed:" in line: speed = line.split(':')[1].strip()
-            if "Link detected:" in line: link = line.split(':')[1].strip()
-        return {"interface": interface, "speed": speed, "link_detected": link}
-    except:
-        return {"error": "ethtool failed"}
+        res = subprocess.check_output(["ethtool", interface], stderr=subprocess.STDOUT).decode()
+        link_detected = "Link detected: yes" in res
+        return {"status": "Up" if link_detected else "Down", "detail": res.split('\n')[0]}
+    except Exception as e:
+        return {"status": "Error", "error": str(e)}
 
-def get_transport_session_stats():
-    """Check L4/L5: Active TCP connections"""
+def check_l3_connectivity(target):
+    """L3: Network Connectivity (Ping)"""
     try:
-        # Get TCP state counts
-        output = subprocess.check_output(['ss', '-s']).decode('utf-8')
-        return {"summary": output.strip()}
-    except:
-        return {"error": "ss command failed"}
+        subprocess.check_call(["ping", "-c", "1", "-W", "2", target], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        return {"status": "Reachable"}
+    except Exception:
+        return {"status": "Unreachable"}
 
-def get_application_health(urls):
-    """Check L7: HTTP Status codes"""
-    import requests
-    results = {}
-    for url in urls:
-        try:
-            res = requests.get(url, timeout=5)
-            results[url] = {"status": res.status_code, "latency_ms": res.elapsed.total_seconds() * 1000}
-        except Exception as e:
-            results[url] = {"error": str(e)}
-    return results
+def check_l7_http(url):
+    """L7: Application Check (HTTP)"""
+    try:
+        res = subprocess.check_output(["curl", "-o", "/dev/null", "-s", "-w", "%{http_code}", url]).decode()
+        return {"status": "Healthy" if res == "200" else "Alert", "code": res}
+    except Exception as e:
+        return {"status": "Error", "error": str(e)}
+
+def run_full_diag(target_ip, web_url=None):
+    report = {
+        "L3_Connectivity": check_l3_connectivity(target_ip),
+    }
+    if web_url:
+        report["L7_HTTP"] = check_l7_http(web_url)
+    return report
 
 if __name__ == "__main__":
-    print(json.dumps({
-        "L1_Physical": get_physical_layer(),
-        "L4_L5_Session": get_transport_session_stats(),
-        "L7_Application": get_application_health(["https://www.google.com", "https://api.github.com"])
-    }, indent=2))
+    if len(sys.argv) > 1:
+        print(json.dumps(run_full_diag(sys.argv[1], sys.argv[2] if len(sys.argv) > 2 else None), indent=2))
