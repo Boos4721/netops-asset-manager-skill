@@ -7,3 +7,4 @@ requests-toolbelt
 speedtest-cli
 psutil
 python-dotenv
+psycopg2
