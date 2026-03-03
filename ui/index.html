@@ -21,8 +21,39 @@
 </head>
 <body class="overflow-hidden h-screen">
     <div id="app" v-cloak class="flex h-full">
+        
+        <!-- Login Screen -->
+        <div v-if="!isLoggedIn" class="fixed inset-0 z-[200] bg-slate-900 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 animate-in zoom-in duration-300">
+                <div class="text-center mb-8">
+                    <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <i data-lucide="shield-check" class="w-8 h-8"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900">NetOps 登录</h2>
+                    <p class="text-slate-500 text-sm mt-2">使用 PostgreSQL 数据库账户登录</p>
+                </div>
+                <form @submit.prevent="login" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">用户名</label>
+                        <input v-model="loginForm.username" type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="admin" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">密码</label>
+                        <input v-model="loginForm.password" type="password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20">
+                        登 录
+                    </button>
+                    <p v-if="loginError" class="text-red-500 text-sm text-center mt-2">{{ loginError }}</p>
+                </form>
+                <div class="mt-6 text-center">
+                    <p class="text-xs text-slate-400">默认账户: admin / boos</p>
+                </div>
+            </div>
+        </div>
+
         <!-- Sidebar -->
-        <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800">
+        <aside v-else class="w-64 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800">
             <div class="p-6 border-b border-slate-800 flex items-center gap-3">
                 <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-blue-900/20">
                     <i data-lucide="shield-check"></i>
@@ -40,14 +71,14 @@
 
             <div class="p-4 border-t border-slate-800">
                 <div class="flex items-center gap-3 px-2 py-3">
-                    <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-bold uppercase">
+                    <div class="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold uppercase">
                         {{ currentUser.name[0] }}
                     </div>
                     <div class="flex-1 min-w-0 text-sm">
                         <p class="text-white font-semibold truncate">{{ currentUser.name }}</p>
                         <p class="text-slate-500 truncate text-xs uppercase">{{ currentUser.role }}</p>
                     </div>
-                    <button class="text-slate-500 hover:text-white transition-colors">
+                    <button @click="logout" class="text-slate-500 hover:text-white transition-colors" title="退出登录">
                         <i data-lucide="log-out" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -55,7 +86,7 @@
         </aside>
 
         <!-- Main Content -->
-        <main class="flex-1 flex flex-col overflow-hidden bg-slate-50">
+        <main v-if="isLoggedIn" class="flex-1 flex flex-col overflow-hidden bg-slate-50">
             <!-- Header -->
             <header class="h-16 glass-card border-b flex items-center justify-between px-8 z-10 sticky top-0">
                 <h2 class="text-lg font-semibold text-slate-800">{{ currentNavLabel }}</h2>
@@ -73,34 +104,8 @@
 
             <!-- Scrollable Content Area -->
             <div class="flex-1 overflow-y-auto p-8">
-                <!-- Onboarding View (Step 1) -->
-                <div v-if="!hasInitialData && currentView !== 'onboarding'" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-10 text-center animate-in fade-in zoom-in duration-300">
-                        <div class="w-20 h-20 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                            <i data-lucide="database" class="w-10 h-10"></i>
-                        </div>
-                        <h2 class="text-3xl font-bold text-slate-900 mb-4">欢迎使用 NetOps Pro</h2>
-                        <p class="text-slate-500 mb-8 text-lg">当前系统尚未录入任何设备。请选择录入方式开启您的智能运维之旅。</p>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                            <button @click="currentView = 'onboarding'" class="group p-6 border-2 border-slate-100 hover:border-blue-500 rounded-2xl text-left transition-all hover:bg-blue-50">
-                                <i data-lucide="file-spreadsheet" class="w-8 h-8 text-green-500 mb-3"></i>
-                                <h3 class="font-bold text-slate-800">批量录入</h3>
-                                <p class="text-sm text-slate-500 mt-1">支持上传 XLSX, CSV 文件或直接粘贴文本。</p>
-                            </button>
-                            <button @click="startAiEntry" class="group p-6 border-2 border-slate-100 hover:border-blue-500 rounded-2xl text-left transition-all hover:bg-blue-50">
-                                <i data-lucide="sparkles" class="w-8 h-8 text-purple-500 mb-3"></i>
-                                <h3 class="font-bold text-slate-800">AI 智能录入</h3>
-                                <p class="text-sm text-slate-500 mt-1">通过对话框描述您的设备，让 AI 自动解析录入。</p>
-                            </button>
-                        </div>
-                        <button @click="hasInitialData = true" class="text-slate-400 hover:text-slate-600 font-medium transition-colors underline">暂不录入，直接进入系统</button>
-                    </div>
-                </div>
-
-                <!-- Dashboard Content -->
+                <!-- Dashboard -->
                 <div v-if="currentView === 'dashboard'" class="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-                    <!-- Stats Grid -->
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div v-for="stat in stats" :key="stat.label" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                             <div class="flex items-center gap-4 mb-4">
@@ -112,104 +117,35 @@
                                     <p class="text-2xl font-bold text-slate-900">{{ stat.value }}</p>
                                 </div>
                             </div>
-                            <div class="flex items-center gap-1 text-xs">
-                                <span :class="stat.trend > 0 ? 'text-green-500' : 'text-red-500'" class="font-semibold">
-                                    {{ stat.trend > 0 ? '+' : '' }}{{ stat.trend }}%
-                                </span>
-                                <span class="text-slate-400">较昨日</span>
-                            </div>
                         </div>
                     </div>
-
-                    <!-- Asset & Management (Step 2) -->
                     <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+                        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                             <h3 class="font-bold text-slate-800 flex items-center gap-2">
                                 <i data-lucide="server" class="w-5 h-5 text-blue-500"></i>
-                                资产在线状态与监控
+                                资产监控
                             </h3>
-                            <div class="flex gap-2">
-                                <button @click="batchReboot" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-200 transition-colors flex items-center gap-2">
-                                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i> 批量重启
-                                </button>
-                                <button @click="showAddModal = true" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 shadow-lg shadow-blue-600/20">
-                                    <i data-lucide="plus" class="w-4 h-4"></i> 添加设备
-                                </button>
-                            </div>
                         </div>
                         <div class="overflow-x-auto">
                             <table class="w-full text-left">
                                 <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-semibold">
                                     <tr>
-                                        <th class="px-6 py-4"><input type="checkbox" class="rounded text-blue-600"></th>
                                         <th class="px-6 py-4">设备名称 / IP</th>
-                                        <th class="px-6 py-4">品牌 / 型号</th>
-                                        <th class="px-6 py-4">实时指标 (CPU/Temp/GPU)</th>
-                                        <th class="px-6 py-4 text-center">状态</th>
-                                        <th class="px-6 py-4 text-right">管理操作</th>
+                                        <th class="px-6 py-4">品牌</th>
+                                        <th class="px-6 py-4">状态</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-slate-100">
-                                    <tr v-for="device in inventory" :key="device.ip" class="hover:bg-slate-50 transition-colors group">
-                                        <td class="px-6 py-4"><input type="checkbox" class="rounded text-blue-600"></td>
+                                    <tr v-for="device in inventory" :key="device.ip" class="hover:bg-slate-50">
                                         <td class="px-6 py-4">
                                             <div class="font-bold text-slate-900">{{ device.name }}</div>
                                             <div class="text-xs text-slate-500 font-mono">{{ device.ip }}</div>
                                         </td>
-                                        <td class="px-6 py-4 text-sm">
-                                            <div class="flex items-center gap-2">
-                                                <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-bold uppercase tracking-tight">
-                                                    {{ device.vendor }}
-                                                </span>
-                                                <span class="text-slate-500">{{ device.model || '标准型' }}</span>
-                                            </div>
-                                        </td>
+                                        <td class="px-6 py-4 text-sm text-slate-500">{{ device.vendor }}</td>
                                         <td class="px-6 py-4">
-                                            <div class="flex items-center gap-4">
-                                                <!-- CPU -->
-                                                <div class="flex flex-col gap-1 w-16">
-                                                    <div class="flex justify-between text-[10px] font-bold text-slate-400">
-                                                        <span>CPU</span>
-                                                        <span>{{ device.cpu || 0 }}%</span>
-                                                    </div>
-                                                    <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                        <div :style="{ width: (device.cpu || 0) + '%' }" :class="device.cpu > 80 ? 'bg-red-500' : 'bg-green-500'" class="h-full"></div>
-                                                    </div>
-                                                </div>
-                                                <!-- Temp -->
-                                                <div class="flex flex-col items-center">
-                                                    <span class="text-xs font-bold" :class="device.temp > 70 ? 'text-red-500' : 'text-slate-600'">{{ device.temp || 45 }}°C</span>
-                                                    <span class="text-[9px] text-slate-400 font-medium">温度</span>
-                                                </div>
-                                                <!-- GPU (if exists) -->
-                                                <div v-if="device.gpu" class="flex flex-col gap-1 w-16">
-                                                    <div class="flex justify-between text-[10px] font-bold text-slate-400">
-                                                        <span>GPU</span>
-                                                        <span>{{ device.gpu }}%</span>
-                                                    </div>
-                                                    <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                        <div :style="{ width: device.gpu + '%' }" class="h-full bg-purple-500"></div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td class="px-6 py-4 text-center">
-                                            <span :class="device.status === 'online' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight">
+                                            <span :class="device.status === 'online' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'" class="px-3 py-1 rounded-full text-xs font-bold uppercase">
                                                 {{ device.status === 'online' ? '在线' : '离线' }}
                                             </span>
-                                        </td>
-                                        <td class="px-6 py-4 text-right">
-                                            <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button @click="rebootDevice(device)" class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="重启">
-                                                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                                                </button>
-                                                <button @click="shutdownDevice(device)" class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all" title="关机">
-                                                    <i data-lucide="power" class="w-4 h-4"></i>
-                                                </button>
-                                                <button class="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-all">
-                                                    <i data-lucide="more-horizontal" class="w-4 h-4"></i>
-                                                </button>
-                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -218,148 +154,153 @@
                     </div>
                 </div>
 
-                <!-- Topology View (Step 8) -->
-                <div v-show="currentView === 'topology'" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-6 h-full flex flex-col">
+                <!-- PM2 Tasks -->
+                <div v-if="currentView === 'pm2'" class="space-y-6 animate-in slide-in-from-right-4 duration-500">
                     <div class="flex items-center justify-between">
-                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
-                            <i data-lucide="map" class="w-5 h-5 text-blue-500"></i>
-                            物理拓扑可视化
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2 text-xl">
+                            <i data-lucide="play-circle" class="w-6 h-6 text-blue-500"></i>
+                            PM2 进程管理
                         </h3>
-                        <div class="flex gap-2 text-sm text-slate-500">
-                            <div class="flex items-center gap-1"><span class="w-3 h-3 bg-blue-500 rounded-full"></span> 核心层</div>
-                            <div class="flex items-center gap-1"><span class="w-3 h-3 bg-purple-500 rounded-full"></span> 汇聚层</div>
-                            <div class="flex items-center gap-1"><span class="w-3 h-3 bg-slate-400 rounded-full"></span> 接入层</div>
-                        </div>
-                    </div>
-                    <div id="topology-container" class="flex-1"></div>
-                </div>
-
-                <!-- Operators Page (Step 4) -->
-                <div v-if="currentView === 'monitoring'" class="space-y-6 animate-in slide-in-from-right-4 duration-500">
-                    <div class="flex items-center justify-between">
-                        <h3 class="font-bold text-slate-800 flex items-center gap-2 text-2xl">
-                            故障监控台
-                        </h3>
-                        <div class="px-4 py-2 bg-red-100 text-red-700 rounded-xl font-bold flex items-center gap-2 animate-pulse">
-                            <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-                            检测到 3 个严重故障
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-1 gap-4">
-                        <div v-for="alert in alerts" :key="alert.id" class="glass-card border-l-4 border-red-500 p-6 rounded-2xl shadow-sm flex items-center gap-6">
-                            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center shrink-0">
-                                <i :data-lucide="alert.icon" class="w-6 h-6"></i>
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex items-center gap-3">
-                                    <h4 class="font-bold text-slate-900 text-lg">{{ alert.title }}</h4>
-                                    <span class="text-xs font-bold text-red-500 bg-red-50 px-2 py-0.5 rounded uppercase tracking-wider">Critical</span>
-                                </div>
-                                <p class="text-slate-500 mt-1">{{ alert.message }}</p>
-                                <div class="flex items-center gap-4 mt-3 text-xs text-slate-400 font-medium">
-                                    <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> {{ alert.time }}</span>
-                                    <span class="flex items-center gap-1"><i data-lucide="tag" class="w-3 h-3"></i> {{ alert.category }}</span>
-                                </div>
-                            </div>
-                            <button class="px-6 py-2 bg-slate-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-all shadow-lg shadow-slate-900/10">去处理</button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tasks (Step 5) -->
-                <div v-if="currentView === 'tasks'" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
-                    <div class="flex items-center justify-between mb-8">
-                        <h3 class="text-xl font-bold text-slate-800">定时运维任务 (Cron)</h3>
-                        <button @click="showTaskModal = true" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold flex items-center gap-2">
-                            <i data-lucide="calendar-plus" class="w-5 h-5"></i> 新增任务
+                        <button @click="showPm2Modal = true" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-blue-600/20">
+                            <i data-lucide="plus" class="w-4 h-4"></i> 部署新任务
                         </button>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div v-for="task in tasks" :key="task.id" class="p-6 border border-slate-100 rounded-2xl hover:border-blue-200 hover:shadow-md transition-all">
-                            <div class="flex items-center justify-between mb-4">
-                                <span :class="task.active ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'" class="px-2 py-1 rounded text-[10px] font-bold uppercase">
-                                    {{ task.active ? '运行中' : '已暂停' }}
-                                </span>
-                                <div class="flex gap-1">
-                                    <button class="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-md transition-colors"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                    <button class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                                </div>
-                            </div>
-                            <h4 class="font-bold text-slate-900 text-lg">{{ task.name }}</h4>
-                            <p class="text-sm text-slate-500 mt-1 line-clamp-2">{{ task.command }}</p>
-                            <div class="mt-6 p-4 bg-slate-50 rounded-xl flex items-center justify-between">
-                                <div class="flex flex-col">
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">执行计划</span>
-                                    <span class="text-xs font-bold text-slate-700">{{ task.schedule }}</span>
-                                </div>
-                                <div class="text-right">
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">下次执行</span>
-                                    <div class="text-xs font-bold text-slate-700">{{ task.nextRun }}</div>
-                                </div>
-                            </div>
-                        </div>
+                    
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-semibold">
+                                <tr>
+                                    <th class="px-6 py-4">任务名称</th>
+                                    <th class="px-6 py-4">状态</th>
+                                    <th class="px-6 py-4">内存</th>
+                                    <th class="px-6 py-4">CPU</th>
+                                    <th class="px-6 py-4">重启次数</th>
+                                    <th class="px-6 py-4">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr v-for="task in pm2Tasks" :key="task.name" class="hover:bg-slate-50">
+                                    <td class="px-6 py-4 font-bold text-slate-900">{{ task.name }}</td>
+                                    <td class="px-6 py-4">
+                                        <span :class="task.status === 'online' ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'" class="px-2 py-1 rounded text-xs font-bold uppercase">
+                                            {{ task.status }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm font-mono text-slate-600">{{ formatBytes(task.memory) }}</td>
+                                    <td class="px-6 py-4 text-sm font-mono text-slate-600">{{ task.cpu }}%</td>
+                                    <td class="px-6 py-4 text-sm text-slate-500">{{ task.restarts }}</td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex gap-2">
+                                            <button class="p-2 text-slate-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg" title="重启"><i data-lucide="rotate-ccw" class="w-4 h-4"></i></button>
+                                            <button class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg" title="停止"><i data-lucide="square" class="w-4 h-4"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr v-if="pm2Tasks.length === 0">
+                                    <td colspan="6" class="px-6 py-8 text-center text-slate-400">暂无 PM2 任务运行</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
-                <!-- Logs (Step 6) -->
-                <div v-if="currentView === 'logs'" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
-                    <div class="p-6 border-b flex items-center justify-between">
-                        <h3 class="text-xl font-bold text-slate-800 tracking-tight">操作与自动化日志</h3>
-                        <div class="flex gap-2">
-                            <select class="px-3 py-2 bg-slate-100 border-none rounded-lg text-sm font-semibold outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                                <option>所有状态</option>
-                                <option class="text-green-600">成功</option>
-                                <option class="text-red-600">失败</option>
-                            </select>
-                            <button class="px-4 py-2 border border-slate-200 text-slate-600 rounded-lg text-sm font-semibold hover:bg-slate-50">导出报告</button>
-                        </div>
-                    </div>
-                    <div class="flex-1 overflow-y-auto font-mono text-[13px]">
-                        <div v-for="log in logLines" :key="log.id" class="px-6 py-3 hover:bg-slate-50 border-b border-slate-50 flex gap-6 items-start group">
-                            <span class="text-slate-400 shrink-0 select-none w-20">{{ log.time }}</span>
-                            <span :class="log.level === 'error' ? 'text-red-500 font-bold' : log.level === 'warn' ? 'text-orange-500' : 'text-blue-500'" class="w-16 shrink-0 uppercase text-[11px] mt-0.5">{{ log.level }}</span>
-                            <div class="flex-1 space-y-1">
-                                <p class="text-slate-700 leading-relaxed">{{ log.message }}</p>
-                                <div v-if="log.detail" class="mt-2 p-3 bg-slate-900 rounded-lg text-slate-300 hidden group-hover:block transition-all animate-in slide-in-from-top-2">
-                                    {{ log.detail }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- RBAC Admin (Step 3) -->
+                <!-- Users Management (PostgreSQL) -->
                 <div v-if="currentView === 'users'" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                     <div class="p-6 border-b flex items-center justify-between">
-                        <h3 class="text-xl font-bold text-slate-800">系统权限管理 (RBAC)</h3>
-                        <button class="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold">创建账号</button>
+                        <h3 class="text-xl font-bold text-slate-800">用户权限管理 (PostgreSQL)</h3>
+                        <button @click="showUserModal = true" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold">创建账号</button>
                     </div>
-                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div v-for="user in users" :key="user.email" class="p-6 border border-slate-100 rounded-2xl flex items-center gap-4 relative overflow-hidden group">
-                            <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-lg uppercase">
-                                {{ user.name[0] }}
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <h4 class="font-bold text-slate-900 truncate">{{ user.name }}</h4>
-                                <p class="text-xs text-slate-500 truncate">{{ user.email }}</p>
-                                <div class="mt-2 flex items-center gap-2">
-                                    <span :class="user.role === 'admin' ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-blue-100 text-blue-700 border-blue-200'" class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-widest border">
-                                        {{ user.role }}
-                                    </span>
-                                    <span class="text-[10px] text-slate-400 font-medium">最后活跃: 2h前</span>
-                                </div>
-                            </div>
-                            <div class="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button class="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all"><i data-lucide="settings" class="w-5 h-5"></i></button>
-                            </div>
-                        </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-semibold">
+                                <tr>
+                                    <th class="px-6 py-4">ID</th>
+                                    <th class="px-6 py-4">用户名</th>
+                                    <th class="px-6 py-4">角色</th>
+                                    <th class="px-6 py-4 text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr v-for="user in dbUsers" :key="user.id" class="hover:bg-slate-50">
+                                    <td class="px-6 py-4 text-sm text-slate-500">{{ user.id }}</td>
+                                    <td class="px-6 py-4 font-bold text-slate-900">{{ user.username }}</td>
+                                    <td class="px-6 py-4">
+                                        <span :class="user.role === 'root' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'" class="px-2 py-1 rounded text-xs font-bold uppercase">
+                                            {{ user.role }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-right">
+                                        <button v-if="user.username !== 'admin'" @click="deleteUser(user.id)" class="text-red-500 hover:text-red-700 text-sm font-semibold">删除</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </main>
 
-        <!-- AI Chat Floating Dialog (Step 1 Integration) -->
-        <div v-if="isAiChatVisible" class="fixed bottom-8 right-8 w-96 h-[550px] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-right-8 duration-500 z-[100]">
+        <!-- Modals -->
+        <!-- PM2 Deploy Modal -->
+        <div v-if="showPm2Modal" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8">
+                <h3 class="text-xl font-bold text-slate-900 mb-6">部署自定义任务 (PM2)</h3>
+                <form @submit.prevent="deployPm2Task" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">任务名称</label>
+                        <input v-model="pm2Form.task_name" type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">二进制文件路径 (本地)</label>
+                        <input v-model="pm2Form.binary_path" type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" placeholder="/usr/local/bin/my-daemon">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">运行参数</label>
+                        <input v-model="pm2Form.args" type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" placeholder="--port 8080 --env prod">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">目标设备 IP (逗号分隔)</label>
+                        <input v-model="pm2Form.target_ips" type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" placeholder="192.168.1.10, 192.168.1.11">
+                    </div>
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" @click="showPm2Modal = false" class="flex-1 py-3 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50">取消</button>
+                        <button type="submit" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg">确认部署</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- User Create Modal -->
+        <div v-if="showUserModal" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8">
+                <h3 class="text-xl font-bold text-slate-900 mb-6">创建数据库用户</h3>
+                <form @submit.prevent="createUser" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">用户名</label>
+                        <input v-model="userForm.username" type="text" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">密码</label>
+                        <input v-model="userForm.password" type="password" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">角色</label>
+                        <select v-model="userForm.role" class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                            <option value="root">Root (管理员)</option>
+                            <option value="operator">Operator (运维)</option>
+                            <option value="viewer">Viewer (只读)</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" @click="showUserModal = false" class="flex-1 py-3 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50">取消</button>
+                        <button type="submit" class="flex-1 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800">创建</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- AI Chat (Bottom Right) -->
+        <div v-if="isLoggedIn && isAiChatVisible" class="fixed bottom-8 right-8 w-96 h-[550px] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-right-8 duration-500 z-[100]">
             <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white">
@@ -367,148 +308,205 @@
                     </div>
                     <div>
                         <p class="font-bold text-sm tracking-tight">AI 智能助理</p>
-                        <p class="text-[10px] text-blue-400 font-semibold uppercase tracking-widest">Active Assistance</p>
                     </div>
                 </div>
-                <button @click="isAiChatVisible = false" class="text-slate-400 hover:text-white transition-colors">
+                <button @click="isAiChatVisible = false" class="text-slate-400 hover:text-white">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
             <div class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50" id="chat-history">
                 <div v-for="msg in chatHistory" :key="msg.id" :class="['flex w-full', msg.from === 'ai' ? 'justify-start' : 'justify-end']">
-                    <div :class="['max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm', msg.from === 'ai' ? 'bg-white text-slate-800 rounded-tl-none border border-slate-100' : 'bg-blue-600 text-white rounded-tr-none']">
+                    <div :class="['max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-sm', msg.from === 'ai' ? 'bg-white text-slate-800 rounded-tl-none border border-slate-100' : 'bg-blue-600 text-white rounded-tr-none']">
                         {{ msg.text }}
                     </div>
                 </div>
             </div>
             <div class="p-4 bg-white border-t flex items-center gap-2">
-                <input v-model="userInput" @keyup.enter="sendMessage" type="text" placeholder="描述设备信息, 如 '录入 10.0.0.1 H3C S5130 北京机房'..." class="flex-1 bg-slate-100 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all">
-                <button @click="sendMessage" class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20">
+                <input v-model="userInput" @keyup.enter="sendMessage" type="text" placeholder="输入指令..." class="flex-1 bg-slate-100 border-none rounded-xl px-4 py-3 text-sm outline-none">
+                <button @click="sendMessage" class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700">
                     <i data-lucide="send" class="w-4 h-4"></i>
                 </button>
             </div>
         </div>
+        
+        <!-- AI Chat Toggle Button -->
+        <button v-if="isLoggedIn && !isAiChatVisible" @click="isAiChatVisible = true" class="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 rounded-full shadow-lg shadow-blue-600/30 flex items-center justify-center text-white hover:scale-110 transition-transform z-50">
+            <i data-lucide="sparkles" class="w-6 h-6"></i>
+        </button>
     </div>
 
     <script>
-        const { createApp, ref, computed, onMounted, nextTick } = Vue;
+        const { createApp, ref, computed, onMounted } = Vue;
 
         createApp({
             setup() {
+                const API_BASE = 'http://localhost:8081';
+                const isLoggedIn = ref(false);
+                const loginForm = ref({ username: '', password: '' });
+                const loginError = ref('');
+                const currentUser = ref({ name: '', role: '' });
+                
                 const currentView = ref('dashboard');
-                const hasInitialData = ref(false); // Change this to real check later
                 const isAiChatVisible = ref(false);
                 const userInput = ref('');
+                const chatHistory = ref([]);
                 
+                // Modals
+                const showPm2Modal = ref(false);
+                const showUserModal = ref(false);
+
+                // Data
+                const pm2Tasks = ref([]);
+                const dbUsers = ref([]);
+                const inventory = ref([]);
+                
+                // Forms
+                const pm2Form = ref({ task_name: '', binary_path: '', args: '', target_ips: '' });
+                const userForm = ref({ username: '', password: '', role: 'operator' });
+
                 const nav = [
                     { id: 'dashboard', label: '资产总览', icon: 'layout-grid' },
-                    { id: 'topology', label: '物理拓扑', icon: 'map' },
-                    { id: 'monitoring', label: '故障监控', icon: 'activity' },
-                    { id: 'tasks', label: '定时任务', icon: 'clock' },
-                    { id: 'logs', label: '操作日志', icon: 'file-text' },
-                    { id: 'users', label: '权限管理', icon: 'users' }
+                    { id: 'pm2', label: 'PM2 任务', icon: 'play-circle' },
+                    { id: 'users', label: '用户管理', icon: 'users' }
                 ];
 
                 const currentNavLabel = computed(() => nav.find(n => n.id === currentView.value)?.label || '');
+                
+                const stats = [
+                    { label: '总资产', value: '0', icon: 'server', colorClass: 'bg-blue-100 text-blue-600' },
+                    { label: 'PM2 进程', value: '0', icon: 'activity', colorClass: 'bg-green-100 text-green-600' },
+                    { label: '数据库用户', value: '0', icon: 'database', colorClass: 'bg-purple-100 text-purple-600' },
+                    { label: '系统状态', value: '正常', icon: 'check-circle', colorClass: 'bg-slate-100 text-slate-600' }
+                ];
 
-                const currentUser = { name: 'Boos Admin', role: 'root' };
+                const login = async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/users/login`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(loginForm.value)
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            isLoggedIn.value = true;
+                            currentUser.value = { name: data.username, role: data.role };
+                            loadData();
+                        } else {
+                            loginError.value = data.message || '登录失败';
+                        }
+                    } catch (e) {
+                        loginError.value = '无法连接到后端 API';
+                    }
+                };
 
-                const stats = ref([
-                    { label: '总资产', value: '128', icon: 'server', colorClass: 'bg-blue-100 text-blue-600', trend: 12 },
-                    { label: '在线设备', value: '124', icon: 'zap', colorClass: 'bg-green-100 text-green-600', trend: 2 },
-                    { label: '故障告警', value: '3', icon: 'alert-circle', colorClass: 'bg-red-100 text-red-600', trend: -15 },
-                    { label: 'GPU 在线', value: '16', icon: 'cpu', colorClass: 'bg-purple-100 text-purple-600', trend: 0 }
-                ]);
+                const logout = () => {
+                    isLoggedIn.value = false;
+                    loginForm.value = { username: '', password: '' };
+                };
 
-                const inventory = ref([
-                    { name: 'Core-Switch-01', ip: '192.168.1.1', vendor: 'H3C', model: 'S5130', cpu: 12, temp: 42, status: 'online' },
-                    { name: 'GPU-Node-Alpha', ip: '192.168.1.10', vendor: 'LINUX', model: 'Supermicro', cpu: 45, temp: 68, gpu: 82, status: 'online' },
-                    { name: 'Firewall-ASA', ip: '10.0.0.1', vendor: 'CISCO', model: 'ASA-5506', cpu: 8, temp: 38, status: 'online' },
-                    { name: 'Edge-Router-HK', ip: '116.207.140.206', vendor: 'LINUX', model: 'Alpine', cpu: 92, temp: 75, status: 'online' },
-                    { name: 'Test-VRP-01', ip: '192.168.1.20', vendor: 'HUAWEI', model: 'S5700', cpu: 0, temp: 0, status: 'offline' }
-                ]);
+                const loadData = async () => {
+                    try {
+                        // Load Users
+                        const uRes = await fetch(`${API_BASE}/api/users`);
+                        dbUsers.value = await uRes.json();
+                        
+                        // Load PM2
+                        const pRes = await fetch(`${API_BASE}/api/pm2/status`);
+                        pm2Tasks.value = await pRes.json();
+                        
+                        // Load Inventory
+                        const iRes = await fetch(`${API_BASE}/api/inventory`);
+                        inventory.value = await iRes.json();
+                        
+                        // Update stats
+                        stats[0].value = inventory.value.length;
+                        stats[1].value = pm2Tasks.value.length;
+                        stats[2].value = dbUsers.value.length;
+                    } catch (e) {
+                        console.error('Load data failed', e);
+                    }
+                };
 
-                const alerts = ref([
-                    { id: 1, title: 'BGP 会话断开', message: '核心交换机 192.168.1.1 与 邻居 10.255.255.1 的会话已断开逾 10 分钟。', icon: 'network', time: '14:22:05', category: 'Routing' },
-                    { id: 2, title: 'GPU 显存溢出风险', message: 'GPU-Node-Alpha 上的 0 号卡显存占用率达 98.5%，建议检查进程。', icon: 'thermometer', time: '13:45:12', category: 'Hardware' },
-                    { id: 3, title: 'SSL 证书即将过期', message: '域名 nb.boos.xin 的证书还有 12 天到期，请及时更新。', icon: 'lock', time: '09:00:00', category: 'Security' }
-                ]);
+                const deployPm2Task = async () => {
+                    const payload = {
+                        task_name: pm2Form.value.task_name,
+                        binary_path: pm2Form.value.binary_path,
+                        args: pm2Form.value.args,
+                        target_ips: pm2Form.value.target_ips.split(',').map(s => s.trim()).filter(s => s)
+                    };
+                    
+                    try {
+                        const res = await fetch(`${API_BASE}/api/pm2/deploy`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        const data = await res.json();
+                        alert('部署完成: ' + JSON.stringify(data.results));
+                        showPm2Modal.value = false;
+                        loadData();
+                    } catch (e) {
+                        alert('部署失败');
+                    }
+                };
 
-                const logLines = ref([
-                    { id: 1, time: '15:02:11', level: 'info', message: '用户 Boos Admin 手动触发了 Core-Switch-01 的健康探测。', detail: 'Command: scripts/health_prober.py 192.168.1.1' },
-                    { id: 2, time: '14:55:00', level: 'warn', message: '定时任务 [Daily Backup] 部分执行失败：192.168.1.20 无法建立 SSH 连接。', detail: 'Error: Connection Timeout (60s)' },
-                    { id: 3, time: '14:30:45', level: 'error', message: 'API 服务异常：检测到数据库并发锁定超过 50 个会话。', detail: 'DB_ERROR: lock_wait_timeout_exceeded' }
-                ]);
+                const createUser = async () => {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/users`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(userForm.value)
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            alert('用户创建成功');
+                            showUserModal.value = false;
+                            loadData();
+                        } else {
+                            alert('创建失败: ' + data.message);
+                        }
+                    } catch (e) {
+                        alert('请求失败');
+                    }
+                };
 
-                const tasks = ref([
-                    { id: 1, name: '资产定时巡检', command: 'python3 scripts/health_prober.py --all', schedule: '0 */4 * * *', nextRun: '16:00', active: true },
-                    { id: 2, name: '配置文件每日备份', command: 'python3 scripts/config_backup.py --all', schedule: '0 3 * * *', nextRun: '03:00', active: true },
-                    { id: 3, name: 'GPU 算力集群监控', command: 'python3 scripts/gpu_manager.py --notify', schedule: '*/10 * * * *', nextRun: '15:10', active: false }
-                ]);
-
-                const users = ref([
-                    { name: 'Boos4721', email: 'admin@boos.xin', role: 'root' },
-                    { name: 'Operator-01', email: 'op@boos.xin', role: 'operator' },
-                    { name: 'Security-Audit', email: 'audit@boos.xin', role: 'viewer' }
-                ]);
-
-                const chatHistory = ref([
-                    { id: 1, from: 'ai', text: '你好！我是 NetOps 智能助理。你可以通过文字向我描述你的设备，我会帮你自动识别并录入系统。比如：\"帮我录入一台北京机房的 H3C 交换机，IP是 10.1.1.5，名字叫核心-01\"' }
-                ]);
-
-                const startAiEntry = () => {
-                    isAiChatVisible.value = true;
+                const deleteUser = async (id) => {
+                    if (!confirm('确认删除此用户?')) return;
+                    try {
+                        await fetch(`${API_BASE}/api/users/${id}`, { method: 'DELETE' });
+                        loadData();
+                    } catch (e) {
+                        alert('删除失败');
+                    }
                 };
 
                 const sendMessage = () => {
                     if (!userInput.value.trim()) return;
                     chatHistory.value.push({ id: Date.now(), from: 'user', text: userInput.value });
-                    
-                    // Call OpenClaw's A2UI hook if in Canvas mode, otherwise simulate
                     const text = userInput.value;
                     userInput.value = '';
-                    
                     setTimeout(() => {
-                        chatHistory.value.push({ id: Date.now()+1, from: 'ai', text: '收到！正在尝试解析该设备信息...' });
-                        // In real implementation, this would send an 'act' or 'a2ui_push' back to the agent
-                        window.parent?.postMessage({ type: 'ai_input', data: text }, '*');
-                    }, 800);
+                        chatHistory.value.push({ id: Date.now()+1, from: 'ai', text: '收到指令: ' + text + '。正在处理中...' });
+                    }, 500);
                 };
 
-                const initTopology = () => {
-                    const nodes = new vis.DataSet([
-                        { id: 1, label: '核心交换机', group: 'core', shape: 'image', image: 'https://img.icons8.com/color/96/000000/network-switch.png' },
-                        { id: 2, label: '汇聚 A', group: 'dist', shape: 'image', image: 'https://img.icons8.com/color/96/000000/network-switch.png' },
-                        { id: 3, label: '汇聚 B', group: 'dist', shape: 'image', image: 'https://img.icons8.com/color/96/000000/network-switch.png' },
-                        { id: 4, label: 'GPU 节点 01', group: 'access', shape: 'image', image: 'https://img.icons8.com/color/96/000000/server.png' },
-                        { id: 5, label: 'WEB 服务器', group: 'access', shape: 'image', image: 'https://img.icons8.com/color/96/000000/server.png' }
-                    ]);
-                    const edges = new vis.DataSet([
-                        { from: 1, to: 2, arrows: 'to, from' },
-                        { from: 1, to: 3, arrows: 'to, from' },
-                        { from: 2, to: 4 },
-                        { from: 3, to: 5 }
-                    ]);
-                    const container = document.getElementById('topology-container');
-                    const data = { nodes, edges };
-                    const options = {
-                        groups: {
-                            core: { color: { background: '#3b82f6' } },
-                            dist: { color: { background: '#a855f7' } }
-                        },
-                        physics: { stabilization: true }
-                    };
-                    new vis.Network(container, data, options);
+                const formatBytes = (bytes) => {
+                    if (!bytes) return '0 B';
+                    const k = 1024;
+                    const sizes = ['B', 'KB', 'MB', 'GB'];
+                    const i = Math.floor(Math.log(bytes) / Math.log(k));
+                    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
                 };
 
                 onMounted(() => {
                     lucide.createIcons();
-                    if (currentView.value === 'topology') initTopology();
                 });
 
                 return {
-                    currentView, nav, currentNavLabel, currentUser, stats, inventory, alerts, logLines, tasks, users,
-                    hasInitialData, isAiChatVisible, userInput, chatHistory, startAiEntry, sendMessage
+                    isLoggedIn, loginForm, loginError, currentUser, currentView, nav, currentNavLabel, stats, inventory,
+                    isAiChatVisible, userInput, chatHistory, sendMessage, logout,
+                    showPm2Modal, pm2Form, pm2Tasks, deployPm2Task, formatBytes,
+                    showUserModal, userForm, dbUsers, createUser, deleteUser
                 };
             }
         }).mount('#app');
