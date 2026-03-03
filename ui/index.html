@@ -358,7 +358,7 @@
 
         createApp({
             setup() {
-                const API_BASE = 'http://localhost:8081';
+                const API_BASE = `http://${window.location.hostname}:8081`;
                 const isLoggedIn = ref(false);
                 const loginForm = ref({ username: '', password: '' });
                 const loginError = ref('');
@@ -413,12 +413,12 @@
                     }
                 };
                 
-                const stats = [
+                const stats = ref([
                     { label: '总资产', value: '0', icon: 'server', colorClass: 'bg-blue-100 text-blue-600' },
                     { label: 'PM2 进程', value: '0', icon: 'activity', colorClass: 'bg-green-100 text-green-600' },
                     { label: '数据库用户', value: '0', icon: 'database', colorClass: 'bg-purple-100 text-purple-600' },
                     { label: '系统状态', value: '正常', icon: 'check-circle', colorClass: 'bg-slate-100 text-slate-600' }
-                ];
+                ]);
 
                 const login = async () => {
                     try {
@@ -460,9 +460,9 @@
                         inventory.value = await iRes.json();
                         
                         // Update stats
-                        stats[0].value = inventory.value.length;
-                        stats[1].value = pm2Tasks.value.length;
-                        stats[2].value = dbUsers.value.length;
+                        stats.value[0].value = inventory.value.length;
+                        stats.value[1].value = pm2Tasks.value.length;
+                        stats.value[2].value = dbUsers.value.length;
                     } catch (e) {
                         console.error('Load data failed', e);
                     }
