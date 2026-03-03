@@ -136,18 +136,8 @@ fi
 
 # 4. Install PM2 for Process Management
 if ! command -v pm2 > /dev/null; then
-    echo "📦 $(t '正在安装 Node.js 和 PM2...' 'Installing Node.js and PM2...')"
-    if [ "$OS" = "ubuntu" ] || [ "$OS" = "debian" ] || [ "$OS" = "kali" ] || [ "$OS" = "raspbian" ] || [ "$OS" = "proxmox" ]; then
-        sudo apt install -y npm nodejs
-    elif [ "$OS" = "centos" ] || [ "$OS" = "rhel" ] || [ "$OS" = "rocky" ] || [ "$OS" = "alma" ] || [ "$OS" = "fedora" ]; then
-        if command -v dnf > /dev/null; then
-            sudo dnf install -y npm nodejs
-        else
-            sudo yum install -y npm nodejs
-        fi
-    elif [ "$OS" = "alpine" ]; then
-        sudo apk add nodejs npm
-    fi
+    echo "📦 $(t '正在安装 PM2...' 'Installing PM2...')"
+    # Node.js is assumed to be provided by OpenClaw environment
     sudo npm install -g pm2
 fi
 
