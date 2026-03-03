@@ -245,8 +245,81 @@
                         </table>
                     </div>
                 </div>
+
+                <!-- Models Management -->
+                <div v-if="currentView === 'models'" class="space-y-6 animate-in slide-in-from-right-4 duration-500 pb-20">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2 text-xl">
+                            <i data-lucide="cpu" class="w-6 h-6 text-blue-500"></i>
+                            LLM 模型与 API 管理
+                        </h3>
+                        <button @click="openAddModelModal" class="px-4 py-2 bg-blue-600 text-white rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-blue-600/20">
+                            <i data-lucide="plus" class="w-4 h-4"></i> 接入新模型
+                        </button>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider font-semibold">
+                                <tr>
+                                    <th class="px-6 py-4">模型名称</th>
+                                    <th class="px-6 py-4">提供商 (Provider)</th>
+                                    <th class="px-6 py-4">API Base URL</th>
+                                    <th class="px-6 py-4">状态</th>
+                                    <th class="px-6 py-4">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                <tr v-for="model in llmModels" :key="model.id" class="hover:bg-slate-50">
+                                    <td class="px-6 py-4 font-bold text-slate-900">{{ model.name }}</td>
+                                    <td class="px-6 py-4 text-sm text-slate-500 uppercase">{{ model.provider }}</td>
+                                    <td class="px-6 py-4 text-sm font-mono text-slate-500">{{ model.base_url || '-' }}</td>
+                                    <td class="px-6 py-4">
+                                        <span :class="model.enabled ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'" class="px-2 py-1 rounded text-xs font-bold uppercase">
+                                            {{ model.enabled ? '已启用' : '已禁用' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <button @click="editModel(model)" class="text-blue-500 hover:text-blue-700 font-semibold text-sm mr-3">编辑</button>
+                                        <button @click="deleteModel(model.id)" class="text-red-500 hover:text-red-700 font-semibold text-sm">删除</button>
+                                    </td>
+                                </tr>
+                                <tr v-if="llmModels.length === 0">
+                                    <td colspan="5" class="px-6 py-8 text-center text-slate-400">暂无接入的模型数据</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Full Page Chat View -->
+                <div v-if="currentView === 'chat'" class="h-[calc(100vh-140px)] flex flex-col bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
+                    <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2 text-lg">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-blue-500"></i>
+                            在线 AI 助理 (Session)
+                        </h3>
+                        <button @click="chatHistory = []" class="text-slate-400 hover:text-red-500 text-sm font-semibold flex items-center gap-1"><i data-lucide="trash-2" class="w-4 h-4"></i> 清空历史</button>
+                    </div>
+                    <div class="flex-1 p-6 overflow-y-auto space-y-6" id="chat-history">
+                        <div v-for="msg in chatHistory" :key="msg.id" :class="['flex w-full', msg.from === 'ai' ? 'justify-start' : 'justify-end']">
+                            <div class="flex gap-3 max-w-[80%]" :class="msg.from === 'ai' ? 'flex-row' : 'flex-row-reverse'">
+                                <div :class="['w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1', msg.from === 'ai' ? 'bg-blue-100 text-blue-600' : 'bg-slate-200 text-slate-600']">
+                                    <i :data-lucide="msg.from === 'ai' ? 'bot' : 'user'" class="w-4 h-4"></i>
+                                </div>
+                                <div :class="['px-5 py-3 rounded-2xl text-sm shadow-sm leading-relaxed', msg.from === 'ai' ? 'bg-white border border-slate-100 text-slate-800 rounded-tl-none' : 'bg-blue-600 text-white rounded-tr-none']" style="white-space: pre-wrap;">{{ msg.text }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center gap-3 shrink-0">
+                        <input v-model="userInput" @keyup.enter="sendMessage" type="text" placeholder="输入指令，例如: 录入 10.0.0.5 H3C 交换机..." class="flex-1 bg-white border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                        <button @click="sendMessage" class="px-6 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-colors flex items-center gap-2">
+                            发送 <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </main>
+
 
         <!-- Modals -->
         <!-- PM2 Deploy Modal -->
@@ -359,6 +432,49 @@
             </div>
         </div>
 
+        
+        <!-- Model Form Modal -->
+        <div v-if="showModelFormModal" class="fixed inset-0 z-[110] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-8 max-h-[90vh] overflow-y-auto">
+                <h3 class="text-xl font-bold text-slate-900 mb-6">{{ isEditingModel ? '编辑模型' : '接入新模型' }}</h3>
+                <form @submit.prevent="saveModel" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">模型名称 * (如: gpt-4)</label>
+                            <input v-model="modelForm.name" type="text" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" required>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">提供商 (Provider) *</label>
+                            <select v-model="modelForm.provider" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="openai">OpenAI</option>
+                                <option value="anthropic">Anthropic</option>
+                                <option value="gemini">Google Gemini</option>
+                                <option value="ollama">Ollama (Local)</option>
+                                <option value="openclaw">OpenClaw Built-in</option>
+                                <option value="custom">Custom / Other</option>
+                            </select>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">API Base URL</label>
+                            <input v-model="modelForm.base_url" type="text" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="https://api.openai.com/v1">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">API Key</label>
+                            <input v-model="modelForm.api_key" type="password" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="sk-...">
+                        </div>
+                        <div class="col-span-2 flex items-center gap-2 mt-2">
+                            <input type="checkbox" v-model="modelForm.enabled" id="model-enabled" class="w-4 h-4 text-blue-600 rounded">
+                            <label for="model-enabled" class="text-sm font-bold text-slate-700">启用该模型</label>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 mt-6">
+                        <button type="button" @click="showModelFormModal = false" class="flex-1 py-3 border border-slate-200 text-slate-600 rounded-xl font-bold hover:bg-slate-50">取消</button>
+                        <button type="submit" class="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- User Create Modal -->
         <div v-if="showUserModal" class="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8">
@@ -388,59 +504,7 @@
             </div>
         </div>
 
-        <!-- AI Chat Floating Dialog -->
-        <div v-if="isLoggedIn && isAiChatVisible" :class="['fixed right-8 transition-all duration-300 z-[100] bg-white shadow-2xl border border-slate-200 flex flex-col overflow-hidden', isAiChatMinimized ? 'bottom-8 w-72 h-14 rounded-full cursor-pointer hover:bg-slate-50' : 'bottom-8 w-96 h-[550px] rounded-3xl']">
-            
-            <!-- Minimized Mode -->
-            <div v-if="isAiChatMinimized" @click="isAiChatMinimized = false" class="w-full h-full flex items-center justify-between px-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white">
-                        <i data-lucide="sparkles" class="w-4 h-4"></i>
-                    </div>
-                    <span class="font-bold text-sm text-slate-800 tracking-tight">AI 助理 (点击展开)</span>
-                </div>
-                <button @click.stop="isAiChatVisible = false" class="text-slate-400 hover:text-slate-600 p-1">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-
-            <!-- Expanded Mode -->
-            <template v-else>
-                <div class="p-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white">
-                            <i data-lucide="sparkles" class="w-4 h-4"></i>
-                        </div>
-                        <div>
-                            <p class="font-bold text-sm tracking-tight">AI 智能助理</p>
-                        </div>
-                    </div>
-                    <div class="flex gap-2">
-                        <button @click="isAiChatMinimized = true" class="text-slate-400 hover:text-white p-1" title="最小化">
-                            <i data-lucide="minus" class="w-5 h-5"></i>
-                        </button>
-                        <button @click="isAiChatVisible = false" class="text-slate-400 hover:text-white p-1" title="关闭">
-                            <i data-lucide="x" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50" id="chat-history">
-                    <div v-for="msg in chatHistory" :key="msg.id" :class="['flex w-full', msg.from === 'ai' ? 'justify-start' : 'justify-end']">
-                        <div :class="['max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-sm', msg.from === 'ai' ? 'bg-white text-slate-800 rounded-tl-none border border-slate-100' : 'bg-blue-600 text-white rounded-tr-none']">
-                            {{ msg.text }}
-                        </div>
-                    </div>
-                </div>
-                <div class="p-4 bg-white border-t flex items-center gap-2 shrink-0">
-                    <input v-model="userInput" @keyup.enter="sendMessage" type="text" placeholder="指令, 如: 录入 10.0.0.5 H3C" class="flex-1 bg-slate-100 border-none rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-                    <button @click="sendMessage" class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 transition-colors">
-                        <i data-lucide="send" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </template>
         </div>
-        
-    </div>
 
     <script>
         const { createApp, ref, computed, onMounted, nextTick } = Vue;
@@ -454,8 +518,8 @@
                 const currentUser = ref({ name: '', role: '' });
                 
                 const currentView = ref('dashboard');
-                const isAiChatVisible = ref(false);
-                const isAiChatMinimized = ref(false);
+                
+                
                 const userInput = ref('');
                 const chatHistory = ref([
                     { id: 1, from: 'ai', text: '你好！我是 NetOps 智能助理。你可以发送指令让我录入资产（例如："录入 10.0.0.1 H3C"）。' }
@@ -465,9 +529,24 @@
                 const showPm2Modal = ref(false);
                 const showUserModal = ref(false);
                 const showDeviceDetailsModal = ref(false);
-                const showDeviceFormModal = ref(false);
+                                const showDeviceFormModal = ref(false);
+                const showModelFormModal = ref(false);
 
                 // Data
+                const pm2Tasks = ref([]);
+                const dbUsers = ref([]);
+                const inventory = ref([]);
+                const llmModels = ref([]);
+                const searchQuery = ref('');
+                const selectedDevice = ref({});
+                const isEditingDevice = ref(false);
+                const isEditingModel = ref(false);
+                
+                // Forms
+                const pm2Form = ref({ task_name: '', binary_path: '', args: '', target_ips: '' });
+                const userForm = ref({ username: '', password: '', role: 'operator' });
+                const deviceForm = ref({ name: '', ip: '', vendor: '', status: 'online', cabinet: '', u_position: '', power_consumption: '', remarks: '' });
+                const modelForm = ref({ name: '', provider: 'openai', base_url: '', api_key: '', enabled: true });
                 const pm2Tasks = ref([]);
                 const dbUsers = ref([]);
                 const inventory = ref([]);
@@ -495,6 +574,7 @@
                     { id: 'dashboard', label: '资产总览', icon: 'layout-grid' },
                     { id: 'pm2', label: 'PM2 任务', icon: 'play-circle' },
                     { id: 'users', label: '用户管理', icon: 'users' },
+                    { id: 'models', label: '模型管理', icon: 'cpu' },
                     { id: 'chat', label: 'AI 助理', icon: 'message-square' }
                 ];
 
@@ -504,20 +584,10 @@
                 });
                 
                 const handleNav = (id) => {
-                    if (id === 'chat') {
-                        isAiChatVisible.value = true;
-                        isAiChatMinimized.value = false;
-                    } else {
-                        currentView.value = id;
-                    }
+                    currentView.value = id;
+                    if (id === 'chat') scrollChatToBottom();
                 };
-
-                // Auto-minimize on scroll
-                const onMainScroll = () => {
-                    if (isAiChatVisible.value && !isAiChatMinimized.value) {
-                        isAiChatMinimized.value = true;
-                    }
-                };
+                const onMainScroll = () => {};
                 
                 const stats = ref([
                     { label: '总资产', value: '0', icon: 'server', colorClass: 'bg-blue-100 text-blue-600' },
@@ -564,6 +634,12 @@
                         // Load Inventory
                         const iRes = await fetch(`${API_BASE}/api/inventory`);
                         inventory.value = await iRes.json();
+                        
+                        // Load Models
+                        try {
+                            const mRes = await fetch(`${API_BASE}/api/models`);
+                            llmModels.value = await mRes.json();
+                        } catch(e){}
                         
                         // Update stats
                         stats.value[0].value = inventory.value.length;
@@ -678,6 +754,55 @@
                     }
                 };
 
+                                const openAddModelModal = () => {
+                    isEditingModel.value = false;
+                    modelForm.value = { name: '', provider: 'openai', base_url: '', api_key: '', enabled: true };
+                    showModelFormModal.value = true;
+                };
+
+                const editModel = (model) => {
+                    isEditingModel.value = true;
+                    modelForm.value = { ...model };
+                    showModelFormModal.value = true;
+                };
+
+                const saveModel = async () => {
+                    try {
+                        const url = isEditingModel.value ? `${API_BASE}/api/models/${modelForm.value.id}` : `${API_BASE}/api/models/add`;
+                        const method = isEditingModel.value ? 'PUT' : 'POST';
+                        
+                        const res = await fetch(url, {
+                            method,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(modelForm.value)
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            showModelFormModal.value = false;
+                            loadData();
+                        } else {
+                            alert('保存失败: ' + (data.detail || data.message || ''));
+                        }
+                    } catch (e) {
+                        alert('请求失败');
+                    }
+                };
+
+                const deleteModel = async (id) => {
+                    if (!confirm('确认删除此模型配置?')) return;
+                    try {
+                        const res = await fetch(`${API_BASE}/api/models/${id}`, { method: 'DELETE' });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            loadData();
+                        } else {
+                            alert('删除失败');
+                        }
+                    } catch (e) {
+                        alert('请求失败');
+                    }
+                };
+
                 const deleteDevice = async (ip) => {
                     if (!confirm(`确认删除设备 ${ip}?`)) return;
                     try {
@@ -766,16 +891,16 @@
                 };
 
                 onMounted(() => {
-                    lucide.createIcons();
+                    setInterval(() => { lucide.createIcons(); }, 500);
                 });
 
                 return {
                     isLoggedIn, loginForm, loginError, currentUser, currentView, nav, currentNavLabel, stats, inventory,
-                    isAiChatVisible, isAiChatMinimized, userInput, chatHistory, sendMessage, logout,
+                     userInput, chatHistory, sendMessage, logout,
                     showPm2Modal, pm2Form, pm2Tasks, deployPm2Task, formatBytes,
                     showUserModal, userForm, dbUsers, createUser, deleteUser,
                     filteredInventory, searchQuery, showDeviceDetailsModal, showDeviceFormModal, selectedDevice, isEditingDevice, deviceForm,
-                    openDeviceDetails, openAddDeviceModal, editDevice, saveDevice, deleteDevice,
+                    openDeviceDetails, openAddDeviceModal, editDevice, saveDevice, deleteDevice, llmModels, showModelFormModal, isEditingModel, modelForm, openAddModelModal, editModel, saveModel, deleteModel,
                     handleNav, onMainScroll
                 };
             }
