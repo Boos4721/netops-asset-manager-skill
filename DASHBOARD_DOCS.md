@@ -19,7 +19,10 @@ Dashboard 采用前后端分离的架构：
 
 ### 2.2 资产总览 (Dashboard)
 *   **数据大屏**：页面顶部展示系统的实时核心指标（总资产数、在线设备数、PM2 进程数、数据库用户数），并带有响应式动态更新（Vue Ref）。
-*   **资产列表**：以表格形式列出所有已录入的设备（来源于 `assets/inventory.json`），显示设备名称、IP、品牌及当前在线状态。
+*   **资产列表 (支持 CRUD)**：
+    *   **展示与检索**：以表格形式列出所有已录入的设备（来源于 `assets/inventory.json`），并支持在顶部搜索框根据关键字（IP、设备名、品牌）进行即时过滤。
+    *   **增删改查**：提供“添加资产”按钮用于手工录入；每行操作列支持“编辑”与“删除”设备数据。
+    *   **详情视图**：点击表格中的任意设备行，可唤出设备详情面板，直观展示该设备的机柜、U位、功耗、备注等深度台账信息。
 
 ### 2.3 物理拓扑 (Topology) - *Beta*
 *   使用 Vis.js 引擎自动将录入的网络设备与服务器渲染成带有层级（核心、汇聚、接入）的动态拓扑关系图，使网络结构可视化。
@@ -59,18 +62,18 @@ Dashboard 采用前后端分离的架构：
 输入 `Y` 或直接回车，系统将通过 PM2 自动为您拉起前后端服务。
 
 **手动启动方式：**
-如果您跳过了自动启动，也可以手动通过 PM2 拉起这两个服务：
+如果您跳过了自动启动，也可以进入项目根目录，手动通过 PM2 拉起这两个服务：
 
 1.  **启动后端 API 服务** (默认端口 8081)：
     ```bash
-    pm2 start python3 --name "netops-api" --interpreter python3 -- /root/clawd/skills/netops-asset-manager/scripts/api_server.py
+    pm2 start python3 --name "netops-api" --interpreter python3 -- ./scripts/api_server.py
     ```
-2.  **启动前端 Web 服务** (默认端口 8080)：
+2.  **启动前端 Web 服务** (默认端口 8082)：
     ```bash
-    pm2 start python3 --name "netops-ui" --interpreter python3 -- -m http.server 8080 --directory /root/clawd/skills/netops-asset-manager/ui
+    pm2 start "python3 -m http.server 8082 --directory ./ui" --name "netops-ui"
     ```
 
-访问地址通常为：`http://<服务器IP>:8080/index.html`。
+访问地址通常为：`http://<服务器IP>:8082/index.html`。
 
 ## 4. 常见问题排查
 

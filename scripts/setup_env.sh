@@ -51,7 +51,7 @@ install_debian() {
     # ... (skipping some lines for context matching)
     echo "📦 $(t '正在更新系统软件包...' 'Updating system packages...')"
     sudo apt update
-    sudo apt install -y python3 python3-pip python3-venv ipmitool mtr-tiny traceroute snmp snmp-mibs-downloader smartmontools lm-sensors ethtool nmap iproute2 openssl curl
+    sudo apt install -y python3 python3-pip python3-venv python3-dev gcc libpq-dev ipmitool mtr-tiny traceroute snmp snmp-mibs-downloader smartmontools lm-sensors ethtool nmap iproute2 openssl curl
     
     # Install racadm if on Debian/Ubuntu (Dell repo might be needed, but adding basic message)
     echo "💡 $(t '如需使用 racadm，请安装 Dell iDRAC Tools。' 'For racadm, please install Dell iDRAC Tools.')"
@@ -60,9 +60,9 @@ install_debian() {
 install_redhat() {
     echo "📦 $(t '正在安装系统依赖...' 'Installing system dependencies...')"
     if command -v dnf > /dev/null; then
-        sudo dnf install -y python3 python3-pip ipmitool mtr traceroute net-snmp-utils smartmontools lm_sensors ethtool nmap iproute openssl curl
+        sudo dnf install -y python3 python3-pip python3-devel gcc postgresql-devel ipmitool mtr traceroute net-snmp-utils smartmontools lm_sensors ethtool nmap iproute openssl curl
     else
-        sudo yum install -y python3 python3-pip ipmitool mtr traceroute net-snmp-utils smartmontools lm_sensors ethtool nmap iproute openssl curl
+        sudo yum install -y python3 python3-pip python3-devel gcc postgresql-devel ipmitool mtr traceroute net-snmp-utils smartmontools lm_sensors ethtool nmap iproute openssl curl
     fi
 }
 
@@ -73,7 +73,7 @@ install_alpine() {
     fi
     echo "📦 $(t '正在更新系统软件包...' 'Updating system packages...')"
     sudo apk update
-    sudo apk add python3 py3-pip ipmitool mtr traceroute net-snmp-tools smartmontools lm-sensors ethtool nmap iproute2 openssl curl
+    sudo apk add python3 py3-pip python3-dev gcc musl-dev postgresql-dev ipmitool mtr traceroute net-snmp-tools smartmontools lm-sensors ethtool nmap iproute2 openssl curl
 }
 
 # Execute Installation
@@ -149,8 +149,8 @@ if [[ "$START_DASHBOARD" =~ ^([yY][eE][sS]|[yY]|)$ ]]; then
     echo "🚀 $(t '正在通过 PM2 启动后台服务...' 'Starting backend services via PM2...')"
     pm2 delete netops-api netops-ui 2>/dev/null || true
     pm2 start python3 --name "netops-api" --interpreter python3 -- "$REPO_ROOT/scripts/api_server.py"
-    pm2 start python3 --name "netops-ui" --interpreter python3 -- -m http.server 8080 --directory "$REPO_ROOT/ui"
-    echo "✅ $(t 'Dashboard 启动成功！访问地址: http://<服务器IP>:8080' 'Dashboard started! Access at: http://<Server_IP>:8080')"
+    pm2 start "python3 -m http.server 8082 --directory \"$REPO_ROOT/ui\"" --name "netops-ui"
+    echo "✅ $(t 'Dashboard 启动成功！访问地址: http://<服务器IP>:8082' 'Dashboard started! Access at: http://<Server_IP>:8082')"
 else
     echo "⏭️  $(t '跳过 Dashboard 启动。' 'Skipped Dashboard startup.')"
 fi
