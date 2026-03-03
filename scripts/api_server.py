@@ -182,6 +182,13 @@ class NetOpsAPIHandler(BaseHTTPRequestHandler):
             self._set_headers()
             self.wfile.write(json.dumps({"status": "success", "results": results}).encode())
 
+        elif path == '/api/inventory/add':
+            inventory = self._read_json(INVENTORY_FILE)
+            inventory.append(payload)
+            self._write_json(INVENTORY_FILE, inventory)
+            self._set_headers()
+            self.wfile.write(json.dumps({"status": "success"}).encode())
+
         else:
             self._set_headers(404)
 

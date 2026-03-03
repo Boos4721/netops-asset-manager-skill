@@ -62,7 +62,7 @@
             </div>
             
             <nav class="flex-1 p-4 space-y-2 mt-4">
-                <button v-for="item in nav" :key="item.id" @click="currentView = item.id"
+                <button v-for="item in nav" :key="item.id" @click="handleNav(item.id)"
                     :class="['sidebar-item w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium', currentView === item.id ? 'active shadow-lg shadow-blue-600/20' : '']">
                     <i :data-lucide="item.icon" class="w-5 h-5"></i>
                     {{ item.label }}
@@ -103,9 +103,9 @@
             </header>
 
             <!-- Scrollable Content Area -->
-            <div class="flex-1 overflow-y-auto p-8">
+            <div class="flex-1 overflow-y-auto p-8 relative" @scroll="onMainScroll">
                 <!-- Dashboard -->
-                <div v-if="currentView === 'dashboard'" class="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
+                <div v-if="currentView === 'dashboard'" class="space-y-8 animate-in slide-in-from-bottom-4 duration-500 pb-20">
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div v-for="stat in stats" :key="stat.label" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
                             <div class="flex items-center gap-4 mb-4">
@@ -155,7 +155,7 @@
                 </div>
 
                 <!-- PM2 Tasks -->
-                <div v-if="currentView === 'pm2'" class="space-y-6 animate-in slide-in-from-right-4 duration-500">
+                <div v-if="currentView === 'pm2'" class="space-y-6 animate-in slide-in-from-right-4 duration-500 pb-20">
                     <div class="flex items-center justify-between">
                         <h3 class="font-bold text-slate-800 flex items-center gap-2 text-xl">
                             <i data-lucide="play-circle" class="w-6 h-6 text-blue-500"></i>
@@ -205,7 +205,7 @@
                 </div>
 
                 <!-- Users Management (PostgreSQL) -->
-                <div v-if="currentView === 'users'" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div v-if="currentView === 'users'" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden pb-20">
                     <div class="p-6 border-b flex items-center justify-between">
                         <h3 class="text-xl font-bold text-slate-800">用户权限管理 (PostgreSQL)</h3>
                         <button @click="showUserModal = true" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold">创建账号</button>
@@ -299,44 +299,62 @@
             </div>
         </div>
 
-        <!-- AI Chat (Bottom Right) -->
-        <div v-if="isLoggedIn && isAiChatVisible" class="fixed bottom-8 right-8 w-96 h-[550px] bg-white rounded-3xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-right-8 duration-500 z-[100]">
-            <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+        <!-- AI Chat Floating Dialog -->
+        <div v-if="isLoggedIn && isAiChatVisible" :class="['fixed right-8 transition-all duration-300 z-[100] bg-white shadow-2xl border border-slate-200 flex flex-col overflow-hidden', isAiChatMinimized ? 'bottom-8 w-72 h-14 rounded-full cursor-pointer hover:bg-slate-50' : 'bottom-8 w-96 h-[550px] rounded-3xl']">
+            
+            <!-- Minimized Mode -->
+            <div v-if="isAiChatMinimized" @click="isAiChatMinimized = false" class="w-full h-full flex items-center justify-between px-4">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white">
                         <i data-lucide="sparkles" class="w-4 h-4"></i>
                     </div>
-                    <div>
-                        <p class="font-bold text-sm tracking-tight">AI 智能助理</p>
-                    </div>
+                    <span class="font-bold text-sm text-slate-800 tracking-tight">AI 助理 (点击展开)</span>
                 </div>
-                <button @click="isAiChatVisible = false" class="text-slate-400 hover:text-white">
-                    <i data-lucide="x" class="w-5 h-5"></i>
+                <button @click.stop="isAiChatVisible = false" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50" id="chat-history">
-                <div v-for="msg in chatHistory" :key="msg.id" :class="['flex w-full', msg.from === 'ai' ? 'justify-start' : 'justify-end']">
-                    <div :class="['max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-sm', msg.from === 'ai' ? 'bg-white text-slate-800 rounded-tl-none border border-slate-100' : 'bg-blue-600 text-white rounded-tr-none']">
-                        {{ msg.text }}
+
+            <!-- Expanded Mode -->
+            <template v-else>
+                <div class="p-4 bg-slate-900 text-white flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        </div>
+                        <div>
+                            <p class="font-bold text-sm tracking-tight">AI 智能助理</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <button @click="isAiChatMinimized = true" class="text-slate-400 hover:text-white p-1" title="最小化">
+                            <i data-lucide="minus" class="w-5 h-5"></i>
+                        </button>
+                        <button @click="isAiChatVisible = false" class="text-slate-400 hover:text-white p-1" title="关闭">
+                            <i data-lucide="x" class="w-5 h-5"></i>
+                        </button>
                     </div>
                 </div>
-            </div>
-            <div class="p-4 bg-white border-t flex items-center gap-2">
-                <input v-model="userInput" @keyup.enter="sendMessage" type="text" placeholder="输入指令..." class="flex-1 bg-slate-100 border-none rounded-xl px-4 py-3 text-sm outline-none">
-                <button @click="sendMessage" class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700">
-                    <i data-lucide="send" class="w-4 h-4"></i>
-                </button>
-            </div>
+                <div class="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-50" id="chat-history">
+                    <div v-for="msg in chatHistory" :key="msg.id" :class="['flex w-full', msg.from === 'ai' ? 'justify-start' : 'justify-end']">
+                        <div :class="['max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-sm', msg.from === 'ai' ? 'bg-white text-slate-800 rounded-tl-none border border-slate-100' : 'bg-blue-600 text-white rounded-tr-none']">
+                            {{ msg.text }}
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4 bg-white border-t flex items-center gap-2 shrink-0">
+                    <input v-model="userInput" @keyup.enter="sendMessage" type="text" placeholder="指令, 如: 录入 10.0.0.5 H3C" class="flex-1 bg-slate-100 border-none rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                    <button @click="sendMessage" class="w-10 h-10 bg-blue-600 text-white rounded-xl flex items-center justify-center hover:bg-blue-700 transition-colors">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </template>
         </div>
         
-        <!-- AI Chat Toggle Button -->
-        <button v-if="isLoggedIn && !isAiChatVisible" @click="isAiChatVisible = true" class="fixed bottom-8 right-8 w-14 h-14 bg-blue-600 rounded-full shadow-lg shadow-blue-600/30 flex items-center justify-center text-white hover:scale-110 transition-transform z-50">
-            <i data-lucide="sparkles" class="w-6 h-6"></i>
-        </button>
     </div>
 
     <script>
-        const { createApp, ref, computed, onMounted } = Vue;
+        const { createApp, ref, computed, onMounted, nextTick } = Vue;
 
         createApp({
             setup() {
@@ -348,8 +366,11 @@
                 
                 const currentView = ref('dashboard');
                 const isAiChatVisible = ref(false);
+                const isAiChatMinimized = ref(false);
                 const userInput = ref('');
-                const chatHistory = ref([]);
+                const chatHistory = ref([
+                    { id: 1, from: 'ai', text: '你好！我是 NetOps 智能助理。你可以发送指令让我录入资产（例如："录入 10.0.0.1 H3C"）。' }
+                ]);
                 
                 // Modals
                 const showPm2Modal = ref(false);
@@ -367,10 +388,30 @@
                 const nav = [
                     { id: 'dashboard', label: '资产总览', icon: 'layout-grid' },
                     { id: 'pm2', label: 'PM2 任务', icon: 'play-circle' },
-                    { id: 'users', label: '用户管理', icon: 'users' }
+                    { id: 'users', label: '用户管理', icon: 'users' },
+                    { id: 'chat', label: 'AI 助理', icon: 'message-square' }
                 ];
 
-                const currentNavLabel = computed(() => nav.find(n => n.id === currentView.value)?.label || '');
+                const currentNavLabel = computed(() => {
+                    const n = nav.find(n => n.id === currentView.value);
+                    return n ? n.label : '控制台';
+                });
+                
+                const handleNav = (id) => {
+                    if (id === 'chat') {
+                        isAiChatVisible.value = true;
+                        isAiChatMinimized.value = false;
+                    } else {
+                        currentView.value = id;
+                    }
+                };
+
+                // Auto-minimize on scroll
+                const onMainScroll = () => {
+                    if (isAiChatVisible.value && !isAiChatMinimized.value) {
+                        isAiChatMinimized.value = true;
+                    }
+                };
                 
                 const stats = [
                     { label: '总资产', value: '0', icon: 'server', colorClass: 'bg-blue-100 text-blue-600' },
@@ -480,14 +521,68 @@
                     }
                 };
 
-                const sendMessage = () => {
+                const scrollChatToBottom = () => {
+                    nextTick(() => {
+                        const container = document.getElementById('chat-history');
+                        if (container) container.scrollTop = container.scrollHeight;
+                    });
+                };
+
+                const sendMessage = async () => {
                     if (!userInput.value.trim()) return;
-                    chatHistory.value.push({ id: Date.now(), from: 'user', text: userInput.value });
-                    const text = userInput.value;
+                    const text = userInput.value.trim();
+                    chatHistory.value.push({ id: Date.now(), from: 'user', text: text });
                     userInput.value = '';
-                    setTimeout(() => {
-                        chatHistory.value.push({ id: Date.now()+1, from: 'ai', text: '收到指令: ' + text + '。正在处理中...' });
-                    }, 500);
+                    scrollChatToBottom();
+                    
+                    // Simple regex mock logic to fix the "entering info" bug
+                    if (text.includes('录入') || text.includes('添加')) {
+                        // try extracting IP
+                        const ipMatch = text.match(/\d{1,3}(\.\d{1,3}){3}/);
+                        const ip = ipMatch ? ipMatch[0] : '192.168.1.99';
+                        
+                        // Extract vendor (H3C, Cisco, Huawei, etc)
+                        const vendorMatch = text.match(/[A-Za-z0-9]+/g);
+                        let vendor = 'Generic';
+                        if (vendorMatch) {
+                            const possibleVendors = vendorMatch.filter(v => isNaN(v) && v.length > 2);
+                            if (possibleVendors.length > 0) vendor = possibleVendors[0].toUpperCase();
+                        }
+
+                        setTimeout(async () => {
+                            chatHistory.value.push({ id: Date.now()+1, from: 'ai', text: `正在提交资产录入请求：\nIP: ${ip}\n品牌: ${vendor}\n请稍候...` });
+                            scrollChatToBottom();
+                            
+                            try {
+                                const res = await fetch(`${API_BASE}/api/inventory/add`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        name: `Auto-Device-${vendor}`,
+                                        ip: ip,
+                                        vendor: vendor,
+                                        status: 'online'
+                                    })
+                                });
+                                const data = await res.json();
+                                if (data.status === 'success') {
+                                    chatHistory.value.push({ id: Date.now()+2, from: 'ai', text: '✅ 录入成功！数据已更新至底层文件。' });
+                                    loadData();
+                                } else {
+                                    chatHistory.value.push({ id: Date.now()+2, from: 'ai', text: '❌ 录入失败。' });
+                                }
+                                scrollChatToBottom();
+                            } catch (e) {
+                                chatHistory.value.push({ id: Date.now()+2, from: 'ai', text: '❌ 后端API请求失败。' });
+                                scrollChatToBottom();
+                            }
+                        }, 600);
+                    } else {
+                        setTimeout(() => {
+                            chatHistory.value.push({ id: Date.now()+1, from: 'ai', text: '已收到指令: ' + text + '。目前我的核心能力是“资产录入”，您可以对我说：“帮我录入一台 10.1.1.1 的 H3C 交换机”。' });
+                            scrollChatToBottom();
+                        }, 500);
+                    }
                 };
 
                 const formatBytes = (bytes) => {
@@ -504,9 +599,10 @@
 
                 return {
                     isLoggedIn, loginForm, loginError, currentUser, currentView, nav, currentNavLabel, stats, inventory,
-                    isAiChatVisible, userInput, chatHistory, sendMessage, logout,
+                    isAiChatVisible, isAiChatMinimized, userInput, chatHistory, sendMessage, logout,
                     showPm2Modal, pm2Form, pm2Tasks, deployPm2Task, formatBytes,
-                    showUserModal, userForm, dbUsers, createUser, deleteUser
+                    showUserModal, userForm, dbUsers, createUser, deleteUser,
+                    handleNav, onMainScroll
                 };
             }
         }).mount('#app');
