@@ -48,8 +48,8 @@ Dashboard 采用前后端分离的架构：
 
 ### 前置条件
 1.  **PostgreSQL**：必须已安装并运行，包含数据库 `netops` 及表 `users`，默认存在 `admin` 账号。
-2.  **PM2**：必须已通过 npm 全局安装（`npm install -g pm2`）。
-3.  **Python 依赖**：后端需安装 `psycopg2` 等模块。
+2.  **Node.js / PM2**：OpenClaw 环境默认已自带 Node.js，只需全局安装 PM2（运行 `setup_env.sh` 时会自动检测并安装）。
+3.  **Python 依赖**：后端需安装 `psycopg2` 等模块（由 `setup_env.sh` 自动安装）。
 
 ### 启动服务
 
