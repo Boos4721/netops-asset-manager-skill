@@ -11,6 +11,10 @@ To ensure all scripts function correctly, the following system packages are requ
 sudo apt update
 sudo apt install -y \
     python3-pip \
+    python3-venv \
+    python3-dev \
+    gcc \
+    libpq-dev \
     ipmitool \
     mtr-tiny \
     traceroute \
@@ -22,13 +26,17 @@ sudo apt install -y \
     nmap \
     iproute2 \
     openssl \
-    curl
+    curl \
+    npm
 ```
 
 ### RedHat / CentOS / Rocky / Alma
 ```bash
 sudo dnf install -y \
     python3-pip \
+    python3-devel \
+    gcc \
+    postgresql-devel \
     ipmitool \
     mtr \
     traceroute \
@@ -39,13 +47,18 @@ sudo dnf install -y \
     nmap \
     iproute \
     openssl \
-    curl
+    curl \
+    npm
 ```
 
 ### Alpine Linux
 ```bash
 sudo apk add \
     py3-pip \
+    python3-dev \
+    gcc \
+    musl-dev \
+    postgresql-dev \
     ipmitool \
     mtr \
     traceroute \
@@ -56,7 +69,33 @@ sudo apk add \
     nmap \
     iproute2 \
     openssl \
-    curl
+    curl \
+    nodejs \
+    npm
+```
+
+---
+
+## 📦 PM2 Installation / PM2 安装
+
+After system packages are installed, install PM2 for process management:
+
+```bash
+# For China region, configure npm mirror first
+npm config set registry https://registry.npmmirror.com
+
+# Install PM2 globally
+sudo npm install -g pm2
+
+# Setup PM2 to start on boot
+sudo pm2 startup
+pm2 save
+```
+
+Or simply run the auto-setup script:
+```bash
+chmod +x scripts/setup_env.sh
+./scripts/setup_env.sh
 ```
 
 ---
