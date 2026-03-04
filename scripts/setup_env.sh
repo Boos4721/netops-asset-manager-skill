@@ -35,6 +35,14 @@ fi
 
 echo "🚀 $(t '正在启动 NetOps 环境安装程序...' 'Starting NetOps Environment Setup...')"
 
+# Check if running as root
+if [ "$EUID" -eq 0 ] || [ "$(id -u)" -eq 0 ]; then
+    SUDO=""
+    echo "👤 $(t '检测到 root 用户，将自动跳过 sudo' 'Running as root, sudo not needed')"
+else
+    SUDO="$SUDO"
+fi
+
 # Detect OS
 if [ -f /etc/os-release ]; then
     . /etc/os-release
@@ -50,8 +58,8 @@ install_debian() {
     
     # ... (skipping some lines for context matching)
     echo "📦 $(t '正在更新系统软件包...' 'Updating system packages...')"
-    sudo apt update
-    sudo apt install -y python3 python3-pip python3-venv python3-dev gcc libpq-dev ipmitool mtr-tiny traceroute snmp snmp-mibs-downloader smartmontools lm-sensors ethtool nmap iproute2 openssl curl
+    $SUDO apt update
+    $SUDO apt install -y python3 python3-pip python3-venv python3-dev gcc libpq-dev ipmitool mtr-tiny traceroute snmp snmp-mibs-downloader smartmontools lm-sensors ethtool nmap iproute2 openssl curl npm
     
     # Install racadm if on Debian/Ubuntu (Dell repo might be needed, but adding basic message)
     echo "💡 $(t '如需使用 racadm，请安装 Dell iDRAC Tools。' 'For racadm, please install Dell iDRAC Tools.')"
@@ -60,20 +68,20 @@ install_debian() {
 install_redhat() {
     echo "📦 $(t '正在安装系统依赖...' 'Installing system dependencies...')"
     if command -v dnf > /dev/null; then
-        sudo dnf install -y python3 python3-pip python3-devel gcc postgresql-devel ipmitool mtr traceroute net-snmp-utils smartmontools lm_sensors ethtool nmap iproute openssl curl
+        $SUDO dnf install -y python3 python3-pip python3-devel gcc postgresql-devel ipmitool mtr traceroute net-snmp-utils smartmontools lm_sensors ethtool nmap iproute openssl curl npm
     else
-        sudo yum install -y python3 python3-pip python3-devel gcc postgresql-devel ipmitool mtr traceroute net-snmp-utils smartmontools lm_sensors ethtool nmap iproute openssl curl
+        $SUDO yum install -y python3 python3-pip python3-devel gcc postgresql-devel ipmitool mtr traceroute net-snmp-utils smartmontools lm_sensors ethtool nmap iproute openssl curl npm
     fi
 }
 
 install_alpine() {
     if [ "$IS_CN" = true ]; then
         echo "⚡ $(t '正在切换 Alpine 源至中科大镜像 (USTC)...' 'Switching Alpine sources to USTC mirror...')"
-        sudo sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+        $SUDO sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
     fi
     echo "📦 $(t '正在更新系统软件包...' 'Updating system packages...')"
-    sudo apk update
-    sudo apk add python3 py3-pip python3-dev gcc musl-dev postgresql-dev ipmitool mtr traceroute net-snmp-tools smartmontools lm-sensors ethtool nmap iproute2 openssl curl
+    $SUDO apk update
+    $SUDO apk add python3 py3-pip python3-dev gcc musl-dev postgresql-dev ipmitool mtr traceroute net-snmp-tools smartmontools lm-sensors ethtool nmap iproute2 openssl curl nodejs npm
 }
 
 # Execute Installation
@@ -134,36 +142,20 @@ else
     fi
 fi
 
-# 4. Configure NPM mirror based on location (before any npm install)
-if [ "$IS_CN" = true ]; then
-    echo "📦 $(t '配置 NPM 镜像为国内源...' 'Configuring NPM mirror to China mirror...')"
-    npm config set registry https://registry.npmmirror.com 2>/dev/null || true
-fi
-
-# 5. Install PM2 for Process Management (supports Debian/Ubuntu, RHEL/CentOS, Alpine)
+# 4. Configure NPM mirror and install PM2
 if ! command -v pm2 > /dev/null; then
-    echo "📦 $(t '正在安装 PM2...' 'Installing PM2...')"
-    
-    if command -v apt-get >/dev/null 2>&1; then
-        # Debian/Ubuntu
-        sudo apt-get update
-        sudo apt-get install -y npm
-        sudo npm install -g pm2
-    elif command -v yum >/dev/null 2>&1; then
-        # RHEL/CentOS
-        sudo yum install -y npm
-        sudo npm install -g pm2
-    elif command -v apk >/dev/null 2>&1; then
-        # Alpine
-        sudo apk add --no-cache nodejs npm
-        sudo npm install -g pm2
-    else
-        # Fallback: assume Node.js is provided
-        sudo npm install -g pm2
+    # Step 1: Configure npm mirror based on location (after npm is installed via system packages)
+    if [ "$IS_CN" = true ]; then
+        echo "📦 $(t '配置 NPM 镜像为国内源...' 'Configuring NPM mirror to China mirror...')"
+        npm config set registry https://registry.npmmirror.com 2>/dev/null || true
     fi
     
+    # Step 2: Install PM2
+    echo "📦 $(t '正在安装 PM2...' 'Installing PM2...')"
+    $SUDO npm install -g pm2
+    
     # Setup PM2 to start on boot
-    sudo pm2 startup 2>/dev/null || true
+    $SUDO pm2 startup 2>/dev/null || true
     pm2 save 2>/dev/null || true
 fi
 
