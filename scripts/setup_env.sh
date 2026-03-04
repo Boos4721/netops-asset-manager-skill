@@ -54,9 +54,22 @@ fi
 
 # OS-Specific Mirror & Installation
 install_debian() {
-    echo "📦 $(t '正在切换系统源至镜像站...' 'Switching system sources to mirror...')"
-    
-    # ... (skipping some lines for context matching)
+    if [ "$IS_CN" = true ]; then
+        echo "📦 $(t '正在切换 Debian/Ubuntu 源至镜像站 (中科大)...' 'Switching Debian/Ubuntu sources to USTC mirror...')"
+        if [ -f /etc/apt/sources.list ]; then
+            $SUDO sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+            $SUDO sed -i 's/security.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+            $SUDO sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+            $SUDO sed -i 's/security.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+        fi
+        # Handle DEB822 format if exists
+        if [ -d /etc/apt/sources.list.d ]; then
+            find /etc/apt/sources.list.d -name "*.sources" -type f -exec $SUDO sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' {} +
+            find /etc/apt/sources.list.d -name "*.sources" -type f -exec $SUDO sed -i 's/security.debian.org/mirrors.ustc.edu.cn/g' {} +
+            find /etc/apt/sources.list.d -name "*.sources" -type f -exec $SUDO sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' {} +
+            find /etc/apt/sources.list.d -name "*.sources" -type f -exec $SUDO sed -i 's/security.ubuntu.com/mirrors.ustc.edu.cn/g' {} +
+        fi
+    fi
     echo "📦 $(t '正在更新系统软件包...' 'Updating system packages...')"
     $SUDO apt update
     $SUDO apt install -y python3 python3-pip python3-venv python3-dev gcc libpq-dev ipmitool mtr-tiny traceroute snmp snmp-mibs-downloader smartmontools lm-sensors ethtool nmap iproute2 openssl curl npm
@@ -66,6 +79,15 @@ install_debian() {
 }
 
 install_redhat() {
+    if [ "$IS_CN" = true ]; then
+        echo "📦 $(t '正在切换 RHEL/CentOS 源至镜像站 (中科大)...' 'Switching RHEL/CentOS sources to USTC mirror...')"
+        $SUDO sed -i 's/mirror.centos.org/mirrors.ustc.edu.cn/g' /etc/yum.repos.d/*.repo 2>/dev/null || true
+        $SUDO sed -i 's/baseurl=http:\/\/mirror.centos.org/baseurl=https:\/\/mirrors.ustc.edu.cn/g' /etc/yum.repos.d/*.repo 2>/dev/null || true
+        # Handle Rocky/Alma
+        $SUDO sed -i 's/dl.rockylinux.org/mirrors.ustc.edu.cn/g' /etc/yum.repos.d/*.repo 2>/dev/null || true
+        $SUDO sed -i 's/mirrorlist=/ #mirrorlist=/g' /etc/yum.repos.d/*.repo 2>/dev/null || true
+        $SUDO sed -i 's/#baseurl=http:\/\/mirror.centos.org/baseurl=https:\/\/mirrors.ustc.edu.cn/g' /etc/yum.repos.d/*.repo 2>/dev/null || true
+    fi
     echo "📦 $(t '正在安装系统依赖...' 'Installing system dependencies...')"
     if command -v dnf > /dev/null; then
         $SUDO dnf install -y python3 python3-pip python3-devel gcc postgresql-devel ipmitool mtr traceroute net-snmp-utils smartmontools lm_sensors ethtool nmap iproute openssl curl npm

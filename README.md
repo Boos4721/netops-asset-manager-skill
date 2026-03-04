@@ -31,7 +31,15 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 
 ### 🚀 Quick Start
 1. **Internal Deployment**: Install OpenClaw on a host within your internal management network.
-2. **Auto Setup**: Run the integrated setup script to install Python, Pip, and all dependencies automatically (supports location-based mirror acceleration and Ubuntu DEB822):
+2. **Auto Setup**: Install the skill directly via npm (recommended for production):
+   ```bash
+   npm install -g @boos4721/netops-asset-manager-skill
+   ```
+   For CN users, use our accelerated mirror script for environment setup:
+   ```bash
+   curl -fsSL https://cdn.jsdelivr.net/gh/Boos4721/netops-asset-manager-skill/scripts/setup_env.sh | bash
+   ```
+   Or run the local setup script manually:
    ```bash
    chmod +x scripts/setup_env.sh
    ./scripts/setup_env.sh
@@ -70,7 +78,15 @@ This project is licensed under the **CC BY-NC 4.0**. **Commercial use is strictl
 
 ### 🚀 快速开始
 1. **内网部署**：在您的内网接入一台 OpenClaw 主机。
-2. **自动环境搭建**：运行内置脚本自动安装环境（支持根据 IP 归属地自动切换国内镜像源，适配 Ubuntu DEB822）：
+2. **自动环境搭建**：直接通过 npm 安装 Skill（推荐生产环境）：
+   ```bash
+   npm install -g @boos4721/netops-asset-manager-skill
+   ```
+   推荐中国大陆用户使用 jsDelivr 加速脚本进行环境一键初始化：
+   ```bash
+   curl -fsSL https://cdn.jsdelivr.net/gh/Boos4721/netops-asset-manager-skill/scripts/setup_env.sh | bash
+   ```
+   或者手动运行本地环境搭建脚本：
    ```bash
    chmod +x scripts/setup_env.sh
    ./scripts/setup_env.sh

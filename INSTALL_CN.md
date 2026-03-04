@@ -13,7 +13,7 @@
 在终端中运行以下命令（由 NetOps Asset Manager 维护）：
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/Boos4721/netops-asset-manager-skill/main/scripts/install_openclaw_cn.sh | bash
+curl -fsSL https://cdn.jsdelivr.net/gh/Boos4721/netops-asset-manager-skill/scripts/install_openclaw_cn.sh | bash
 ```
 
 > **注意：** 脚本会自动检测你的系统环境（支持 Ubuntu/Debian/CentOS/Alpine/macOS），并自动配置国内加速镜像。
