@@ -208,10 +208,10 @@ if [[ "$START_DASHBOARD" =~ ^([yY][eE][sS]|[yY]|)$ ]]; then
     echo "🚀 $(t '正在通过 PM2 启动后台服务...' 'Starting backend services via PM2...')"
     pm2 delete netops-api netops-ui 2>/dev/null || true
     pm2 start python3 --name "netops-api" --interpreter python3 -- "$REPO_ROOT/scripts/api_server.py"
-    pm2 start "python3 -m http.server 8082 --directory \"$REPO_ROOT/ui\"" --name "netops-ui"
+    pm2 start python3 --name "netops-ui" --interpreter python3 -- -m http.server 8082 --directory "$REPO_ROOT/ui"
     echo "✅ $(t 'Dashboard 启动成功！访问地址: http://<服务器IP>:8082' 'Dashboard started! Access at: http://<Server_IP>:8082')"
 else
-    echo "⏭️  $(t '跳过 Dashboard 启动。' 'Skipped Dashboard startup.')"
+    echo "⏭️ $(t '跳过 Dashboard 启动。' 'Skipped Dashboard startup.')"
 fi
 
 echo "✅ $(t '环境安装完成！' 'Environment Setup Complete!')"
