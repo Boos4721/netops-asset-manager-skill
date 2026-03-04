@@ -56,8 +56,15 @@ Dashboard 采用前后端分离的架构：
 ## 3. 部署与启动
 
 ### 前置条件
-1.  **PostgreSQL**：必须已安装并运行，包含数据库 `netops` 及表 `users`，默认存在 `admin` 账号。
-2.  **Node.js / PM2**：OpenClaw 环境默认已自带 Node.js，只需全局安装 PM2（运行 `setup_env.sh` 时会自动检测并安装）。
+1.  **PostgreSQL**：
+    *   必须已安装并运行。
+    *   初始化数据库（setup_env.sh 会自动执行）：
+      ```bash
+      sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'boos';"
+      sudo -u postgres psql -c "CREATE DATABASE netops;"
+      ```
+    *   默认存在 `admin` 账号（密码：`boos`），首次登录后可在界面中管理用户。
+2.  **Node.js / PM2**：通过包管理器安装（如 `apt install npm`，然后 `npm install -g pm2`），运行 `scripts/setup_env.sh` 时会自动检测并安装。
 3.  **Python 依赖**：后端需安装 `psycopg2` 等模块（由 `setup_env.sh` 自动安装）。
 
 ### 启动服务
@@ -76,10 +83,10 @@ Dashboard 采用前后端分离的架构：
     ```
 2.  **启动前端 Web 服务** (默认端口 8082)：
     ```bash
-    pm2 start "python3 -m http.server 8082 --directory ./ui" --name "netops-ui"
+    pm2 start python3 --name "netops-ui" --interpreter python3 -- -m http.server 8082 --directory ./ui
     ```
 
-访问地址通常为：`http://<服务器IP>:8082/index.html`。
+> ℹ️ 启动完成后，终端会显示本机 IP 地址，直接访问 `http://<IP>:8082` 即可。
 
 ## 4. 常见问题排查
 
