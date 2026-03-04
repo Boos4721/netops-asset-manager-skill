@@ -218,7 +218,7 @@ if [[ "$START_DASHBOARD" =~ ^([yY][eE][sS]|[yY]|)$ ]]; then
     echo "🚀 $(t '正在通过 PM2 启动后台服务...' 'Starting backend services via PM2...')"
     pm2 delete netops-api netops-ui 2>/dev/null || true
     pm2 start python3 --name "netops-api" -- "$REPO_ROOT/scripts/api_server.py"
-    pm2 start python3 --name "netops-ui" -- -m http.server 8082 -d "$REPO_ROOT/ui"
+    pm2 start python3 --name "netops-ui" -- "$REPO_ROOT/ui/serve_ui.py"
     
     LOCAL_IP=$(get_local_ip)
     echo "✅ $(t "Dashboard 启动成功！访问地址: http://$LOCAL_IP:8082" "Dashboard started! Access at: http://$LOCAL_IP:8082")"
