@@ -138,6 +138,12 @@ fi
 if ! command -v pm2 > /dev/null; then
     echo "📦 $(t '正在安装 PM2...' 'Installing PM2...')"
     
+    # Configure npm mirror based on location
+    if [ "$IS_CN" = true ]; then
+        echo "📦 $(t '配置 NPM 镜像为国内源...' 'Configuring NPM mirror to China mirror...')"
+        npm config set registry https://registry.npmmirror.com
+    fi
+    
     if command -v apt-get >/dev/null 2>&1; then
         # Debian/Ubuntu
         sudo apt-get update
