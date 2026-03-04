@@ -511,7 +511,7 @@
 
         createApp({
             setup() {
-                const API_BASE = '';
+                const API_BASE = ''; // relative path, proxied
                 const isLoggedIn = ref(false);
                 const loginForm = ref({ username: '', password: '' });
                 const loginError = ref('');
