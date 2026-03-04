@@ -202,6 +202,16 @@ fi
 
 # 5. Optional: Start Dashboard
 echo ""
+# Get local IP address
+get_local_ip() {
+    local ip
+    ip=$(hostname -I 2>/dev/null | awk '{print $1}')
+    if [ -z "$ip" ]; then
+        ip=$(ip route get 1.1.1.1 2>/dev/null | grep -oP 'src \K\S+' || echo "127.0.0.1")
+    fi
+    echo "$ip"
+}
+
 echo "❓ $(t '是否启动 NetOps Dashboard (API与Web界面)? [Y/n]' 'Do you want to start the NetOps Dashboard (API & UI)? [Y/n]')"
 read -r -p " > " START_DASHBOARD
 if [[ "$START_DASHBOARD" =~ ^([yY][eE][sS]|[yY]|)$ ]]; then
@@ -209,7 +219,9 @@ if [[ "$START_DASHBOARD" =~ ^([yY][eE][sS]|[yY]|)$ ]]; then
     pm2 delete netops-api netops-ui 2>/dev/null || true
     pm2 start python3 --name "netops-api" --interpreter python3 -- "$REPO_ROOT/scripts/api_server.py"
     pm2 start python3 --name "netops-ui" --interpreter python3 -- -m http.server 8082 --directory "$REPO_ROOT/ui"
-    echo "✅ $(t 'Dashboard 启动成功！访问地址: http://<服务器IP>:8082' 'Dashboard started! Access at: http://<Server_IP>:8082')"
+    
+    LOCAL_IP=$(get_local_ip)
+    echo "✅ $(t "Dashboard 启动成功！访问地址: http://$LOCAL_IP:8082" "Dashboard started! Access at: http://$LOCAL_IP:8082")"
 else
     echo "⏭️ $(t '跳过 Dashboard 启动。' 'Skipped Dashboard startup.')"
 fi
