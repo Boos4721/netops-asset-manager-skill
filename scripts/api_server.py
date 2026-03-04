@@ -348,8 +348,8 @@ async def deploy_pm2_task(req: DeployRequest):
     
     for ip in req.target_ips:
         try:
-            # Build the PM2 command
-            pm2_cmd = f"pm2 start {req.binary_path}"
+            # Build the PM2 command (quote the binary path for safety)
+            pm2_cmd = f"pm2 start \"{req.binary_path}\""
             if req.args:
                 pm2_cmd += f" -- {req.args}"
             pm2_cmd += f" --name {req.task_name}"
