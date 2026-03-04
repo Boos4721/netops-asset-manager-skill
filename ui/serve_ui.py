@@ -5,7 +5,7 @@ import socketserver
 import os
 
 PORT = 8082
-DIRECTORY = os.path.dirname(os.path.abspath(__file__)) + "/ui"
+DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + "/ui"
 
 class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
     def end_headers(self):
