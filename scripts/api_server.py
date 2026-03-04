@@ -80,7 +80,7 @@ def get_providers_from_config():
 # DB config
 DB_CONFIG = {
     "dbname": "netops",
-    "user": "admin",
+    "user": "postgres",
     "password": "boos",
     "host": "127.0.0.1",
     "port": "5432"
