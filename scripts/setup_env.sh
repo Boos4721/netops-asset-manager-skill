@@ -134,15 +134,15 @@ else
     fi
 fi
 
-# 4. Install PM2 for Process Management (supports Debian/Ubuntu, RHEL/CentOS, Alpine)
+# 4. Configure NPM mirror based on location (before any npm install)
+if [ "$IS_CN" = true ]; then
+    echo "📦 $(t '配置 NPM 镜像为国内源...' 'Configuring NPM mirror to China mirror...')"
+    npm config set registry https://registry.npmmirror.com 2>/dev/null || true
+fi
+
+# 5. Install PM2 for Process Management (supports Debian/Ubuntu, RHEL/CentOS, Alpine)
 if ! command -v pm2 > /dev/null; then
     echo "📦 $(t '正在安装 PM2...' 'Installing PM2...')"
-    
-    # Configure npm mirror based on location
-    if [ "$IS_CN" = true ]; then
-        echo "📦 $(t '配置 NPM 镜像为国内源...' 'Configuring NPM mirror to China mirror...')"
-        npm config set registry https://registry.npmmirror.com
-    fi
     
     if command -v apt-get >/dev/null 2>&1; then
         # Debian/Ubuntu
