@@ -142,6 +142,47 @@ else
     fi
 fi
 
+# 3.5. Setup PostgreSQL Database
+echo "🗄️ $(t '正在初始化 PostgreSQL 数据库...' 'Initializing PostgreSQL database...')"
+
+# Detect PostgreSQL and create database/user
+setup_postgres() {
+    if command -v psql >/dev/null 2>&1; then
+        # Try to create database and user
+        $SUDO -u postgres psql -c "ALTER USER postgres PASSWORD 'boos';" 2>/dev/null || true
+        $SUDO -u postgres psql -c "CREATE DATABASE netops;" 2>/dev/null || true
+        
+        # Create tables for RBAC
+        $SUDO -u postgres psql -d netops -c "
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username VARCHAR(50) UNIQUE NOT NULL,
+            password VARCHAR(255) NOT NULL,
+            role VARCHAR(20) DEFAULT 'operator',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        " 2>/dev/null || true
+        
+        # Create default admin user if not exists
+        $SUDO -u postgres psql -d netops -c "
+        INSERT INTO users (username, password, role) 
+        SELECT 'admin', 'boos', 'root' 
+        WHERE NOT EXISTS (SELECT 1 FROM users WHERE username='admin');
+        " 2>/dev/null || true
+        
+        echo "✅ $(t 'PostgreSQL 初始化完成' 'PostgreSQL initialized')"
+    else
+        echo "⚠️ $(t '未检测到 PostgreSQL，跳过数据库初始化' 'PostgreSQL not detected, skipping database setup')"
+    fi
+}
+
+# Check if PostgreSQL is installed (client or server)
+if command -v psql >/dev/null 2>&1 || command -v postgres >/dev/null 2>&1; then
+    setup_postgres
+else
+    echo "⚠️ $(t 'PostgreSQL 未安装，如需用户管理功能请先安装 PostgreSQL' 'PostgreSQL not installed, install it first for user management')"
+fi
+
 # 4. Configure NPM mirror and install PM2
 if ! command -v pm2 > /dev/null; then
     # Step 1: Configure npm mirror based on location (after npm is installed via system packages)
