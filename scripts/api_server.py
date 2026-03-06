@@ -232,10 +232,13 @@ async def get_inventory():
     async def check_device(device):
         ip = device.get('ip')
         if ip:
-            loop = asyncio.get_event_loop()
-            # Offload synchronous ping_check to a thread pool
-            is_online = await loop.run_in_executor(None, ping_check, ip)
-            device['status'] = 'online' if is_online else 'offline'
+            try:
+                loop = asyncio.get_event_loop()
+                # Offload synchronous ping_check to a thread pool
+                is_online = await loop.run_in_executor(None, ping_check, ip)
+                device['status'] = 'online' if is_online else 'offline'
+            except Exception:
+                device['status'] = 'offline'
         return device
 
     tasks = [check_device(d) for d in inventory]
