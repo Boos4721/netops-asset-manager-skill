@@ -545,16 +545,6 @@
                 const userForm = ref({ username: '', password: '', role: 'operator' });
                 const deviceForm = ref({ name: '', ip: '', vendor: '', status: 'online', cabinet: '', u_position: '', power_consumption: '', remarks: '' });
                 const modelForm = ref({ name: '', provider: 'openai', base_url: '', api_key: '', enabled: true });
-                const dbUsers = ref([]);
-                const inventory = ref([]);
-                const searchQuery = ref('');
-                const selectedDevice = ref({});
-                const isEditingDevice = ref(false);
-                
-                // Forms
-                const pm2Form = ref({ task_name: '', binary_path: '', args: '', target_ips: '' });
-                const userForm = ref({ username: '', password: '', role: 'operator' });
-                const deviceForm = ref({ name: '', ip: '', vendor: '', status: 'online', cabinet: '', u_position: '', power_consumption: '', remarks: '' });
                 
                 const filteredInventory = computed(() => {
                     if (!searchQuery.value) return inventory.value;
@@ -888,6 +878,7 @@
                 };
 
                 onMounted(() => {
+                    if (isLoggedIn.value) loadData();
                     setInterval(() => { lucide.createIcons(); }, 500);
                 });
 
