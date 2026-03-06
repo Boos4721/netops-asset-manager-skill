@@ -10,6 +10,7 @@ import uvicorn
 from pydantic import BaseModel
 from typing import List, Optional
 import httpx
+import asyncio
 from health_prober import ping_check
 
 # Resolve paths
@@ -204,13 +205,19 @@ async def chat(req: ChatRequest):
 @app.get("/api/inventory")
 async def get_inventory():
     inventory = read_json(INVENTORY_FILE)
-    # Perform real-time health check
-    for device in inventory:
+    
+    # Run health checks in parallel to avoid blocking the event loop
+    async def check_device(device):
         ip = device.get('ip')
         if ip:
-            is_online = ping_check(ip)
+            loop = asyncio.get_event_loop()
+            # Offload synchronous ping_check to a thread pool
+            is_online = await loop.run_in_executor(None, ping_check, ip)
             device['status'] = 'online' if is_online else 'offline'
-    return inventory
+        return device
+
+    tasks = [check_device(d) for d in inventory]
+    return await asyncio.gather(*tasks)
 
 @app.post("/api/inventory/add")
 async def add_inventory(payload: Request):
