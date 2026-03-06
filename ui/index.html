@@ -325,6 +325,55 @@
                         </button>
                     </div>
                 </div>
+
+                <!-- Topology View -->
+                <div v-if="currentView === 'topology'" class="space-y-6 animate-in zoom-in duration-500 pb-20">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="font-bold text-slate-800 text-xl flex items-center gap-2">
+                                    <i data-lucide="share-2" class="text-blue-500"></i>
+                                    网络拓扑可视化 <span class="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full ml-2">Beta</span>
+                                </h3>
+                                <p class="text-slate-500 text-sm mt-1">自动根据已录入的资产生成逻辑连接关系图</p>
+                            </div>
+                            <button @click="initTopology" class="p-2 text-slate-400 hover:text-blue-600"><i data-lucide="rotate-cw"></i></button>
+                        </div>
+                        <div id="topology-container" class="border border-slate-100 rounded-xl overflow-hidden"></div>
+                    </div>
+                </div>
+
+                <!-- Settings View -->
+                <div v-if="currentView === 'settings'" class="max-w-3xl space-y-8 animate-in slide-in-from-left-4 duration-500 pb-20">
+                    <section>
+                        <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <i data-lucide="flask-conical" class="text-purple-500"></i>
+                            实验性功能 (Experimental)
+                        </h3>
+                        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div class="p-6 flex items-center justify-between border-b border-slate-100">
+                                <div>
+                                    <p class="font-bold text-slate-800">启用网络拓扑可视化</p>
+                                    <p class="text-sm text-slate-500">在侧边栏显示拓扑视图。该功能仍处于测试阶段，可能存在渲染不完整的问题。</p>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" v-model="experimentalFeatures.topology" @change="saveExperimental" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h3 class="text-xl font-bold text-slate-800 mb-4">关于 NetOps Pro</h3>
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-sm text-slate-600">
+                            <p>版本: v2026.3.7-Alpha</p>
+                            <p>内核: OpenClaw 2026.3.2</p>
+                            <hr class="border-slate-100">
+                            <p>本系统旨在提供全自动化的网络资产管理与算力监控。所有核心逻辑均基于 OpenClaw 智能 Agent 驱动。</p>
+                        </div>
+                    </section>
+                </div>
             </div>
         </main>
 
@@ -535,6 +584,11 @@
                 
                 const currentView = ref('dashboard');
                 
+                // Experimental Features
+                const experimentalFeatures = ref(JSON.parse(localStorage.getItem('netops_experimental') || '{"topology": false}'));
+                const saveExperimental = () => {
+                    localStorage.setItem('netops_experimental', JSON.stringify(experimentalFeatures.value));
+                };
                 
                 const userInput = ref('');
                 const chatHistory = ref([
@@ -575,24 +629,55 @@
                 });
 
 
-                const nav = [
-                    { id: 'dashboard', label: '资产总览', icon: 'layout-grid' },
-                    { id: 'pm2', label: 'PM2 任务', icon: 'play-circle' },
-                    { id: 'users', label: '用户管理', icon: 'users' },
-                    { id: 'models', label: '模型管理', icon: 'cpu' },
-                    { id: 'chat', label: 'AI 助理', icon: 'message-square' }
-                ];
+                const nav = computed(() => {
+                    const items = [
+                        { id: 'dashboard', label: '资产总览', icon: 'layout-grid' },
+                        { id: 'pm2', label: 'PM2 任务', icon: 'play-circle' },
+                        { id: 'users', label: '用户管理', icon: 'users' },
+                        { id: 'models', label: '模型管理', icon: 'cpu' },
+                        { id: 'chat', label: 'AI 助理', icon: 'message-square' }
+                    ];
+                    
+                    if (experimentalFeatures.value.topology) {
+                        items.push({ id: 'topology', label: '网络拓扑 (Beta)', icon: 'share-2' });
+                    }
+                    
+                    items.push({ id: 'settings', label: '系统设置', icon: 'settings' });
+                    return items;
+                });
 
                 const currentNavLabel = computed(() => {
-                    const n = nav.find(n => n.id === currentView.value);
+                    const n = nav.value.find(n => n.id === currentView.value);
                     return n ? n.label : '控制台';
                 });
                 
                 const handleNav = (id) => {
                     currentView.value = id;
                     if (id === 'chat') scrollChatToBottom();
+                    if (id === 'topology') nextTick(() => initTopology());
                 };
                 const onMainScroll = () => {};
+
+                const initTopology = () => {
+                    const container = document.getElementById('topology-container');
+                    if (!container) return;
+                    
+                    const nodes = new vis.DataSet(inventory.value.map((d, i) => ({
+                        id: d.ip,
+                        label: d.name || d.ip,
+                        shape: d.vendor === 'H3C' ? 'diamond' : 'dot',
+                        color: d.status === 'online' ? '#10b981' : '#ef4444'
+                    })));
+                    
+                    const edges = new vis.DataSet([]);
+                    // Simple radial layout if no edges
+                    const data = { nodes, edges };
+                    const options = {
+                        physics: { enabled: true, stabilization: true },
+                        nodes: { font: { size: 12, face: 'Inter' } }
+                    };
+                    new vis.Network(container, data, options);
+                };
 
                 const renderMarkdown = (text) => {
                     if (!text) return '';
@@ -945,7 +1030,7 @@
 
                 return {
                     isLoggedIn, loginForm, loginError, currentUser, currentView, nav, currentNavLabel, stats, inventory,
-                     userInput, chatHistory, sendMessage, logout, renderMarkdown,
+                     userInput, chatHistory, sendMessage, logout, renderMarkdown, experimentalFeatures, saveExperimental, initTopology,
                     showPm2Modal, pm2Form, pm2Tasks, deployPm2Task, formatBytes,
                     showUserModal, userForm, dbUsers, createUser, deleteUser,
                     filteredInventory, searchQuery, showDeviceDetailsModal, showDeviceFormModal, selectedDevice, isEditingDevice, deviceForm,
