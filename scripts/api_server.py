@@ -22,9 +22,6 @@ LOGS_DIR = os.path.join(ASSETS_DIR, 'logs')
 UPLOAD_DIR = os.path.join(ASSETS_DIR, 'uploads')
 OPENCLAW_CONFIG = os.path.expanduser("~/.openclaw/openclaw.json")
 
-# Gateway config
-GATEWAY_URL = "http://127.0.0.1:18789/v1/chat/completions"
-
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 def get_openclaw_models():
