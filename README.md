@@ -20,7 +20,8 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 - **Virtualization Support**: Advanced management for **VMware ESXi**, **OpenStack**, **QEMU/KVM**, and **LXC** (Proxmox compatible).
 - **GPU Maintenance**: Support for **NVIDIA** and **AMD** driver installation (official CN/HK sources) and health monitoring.
 - **Network Performance**: Integrated tools for **Speedtest**, **Route Tracing (MTR)**, and **Subnet Scanning (Nmap)**.
-- **Web Dashboard**: Modern SPA (Vue 3 + Tailwind) with AI Chat Session, LLM API Model Management, Topology Visualization, and PM2 Task Management.
+- **Real-time Health Check**: High-performance asynchronous parallel Ping detection for instant device status updates.
+- **Web Dashboard**: Modern SPA (Vue 3 + Tailwind) with AI Assistant (OpenClaw powered), Markdown support, LLM API Model Management, Topology Visualization, and PM2 Task Management.
 - **Safety First**: **Human-in-the-loop** confirmation required for all core network configuration changes.
 - **On-Premise Deployment**: Secure management within internal networks via one-click environment setup.
 
@@ -67,7 +68,8 @@ This project is licensed under the **CC BY-NC 4.0**. **Commercial use is strictl
 - **虚拟化管理**：支持 **VMware ESXi**、**OpenStack**、**QEMU/KVM** 及 **LXC** (Proxmox 兼容)。
 - **显卡运维 (GPU)**：支持 **NVIDIA (N卡)** 与 **AMD (A卡)** 官网驱动静默安装及高温/显存监控。
 - **网络性能监测**：集成 **Speedtest**、**MTR 路由追踪**及 **Nmap 网段发现**。
-- **现代化 Web 看板 (Dashboard)**：基于 Vue 3 + Tailwind 构建的单页应用，深度集成全屏 AI 会话、LLM 大模型 API 管理、网络拓扑可视化与 PM2 进程管理。
+- **实时健康检查**：采用高性能 **Asynchronous (asyncio)** 并行 Ping 探测，实现资产状态的即时更新。
+- **现代化 Web 看板 (Dashboard)**：基于 Vue 3 + Tailwind 构建，集成 OpenClaw 驱动的 AI 助理（支持 Markdown 渲染）、LLM 大模型管理、网络拓扑可视化与 PM2 进程管理。
 - **安全加固**：核心网络变更引入 **人工审查 (Human-in-the-loop)** 机制，确保安全。
 - **内网部署**：支持一键环境初始化，确保管理流量不经过公网，安全可控。
 

@@ -19,6 +19,7 @@ Dashboard 采用前后端分离的架构：
 
 ### 2.2 资产总览 (Dashboard)
 *   **数据大屏**：页面顶部展示系统的实时核心指标（总资产数、在线设备数、PM2 进程数、数据库用户数），并带有响应式动态更新（Vue Ref）。
+*   **实时探测逻辑**：资产状态不再仅依赖静态记录。每次加载资产列表时，后端会通过 `asyncio` 并行对所有 IP 进行实时 Ping 探测，确保“在线/离线”状态的绝对准确。
 *   **资产列表 (支持 CRUD)**：
     *   **展示与检索**：以表格形式列出所有已录入的设备（来源于 `assets/inventory.json`），并支持在顶部搜索框根据关键字（IP、设备名、品牌）进行即时过滤。
     *   **增删改查**：提供“添加资产”按钮用于手工录入；每行操作列支持“编辑”与“删除”设备数据。
@@ -42,16 +43,20 @@ Dashboard 采用前后端分离的架构：
     *   **删除账号**：支持快速删除账号（内置保护，防止误删 `admin`）。
 
 ### 2.6 AI 智能助理 (在线 Session)
-*   **形态**：已升级为左侧菜单中的全屏独立视图，提供沉浸式的自然语言对话体验，并长久保留当前会话 (Session) 的历史记录。
-*   **快捷录入与意图识别**：
-    *   用户可以在全屏聊天框中输入自然语言，例如：“帮我录入一台 10.1.1.1 的 H3C 交换机”。
-    *   系统会自动识别意图并提取 IP 及品牌信息，实时通过 API 将其录入资产库，并给予成功反馈。
-    *   对话过程中支持“清空历史”重置当前对话状态。
+*   **形态**：已升级为左侧菜单中的全屏独立视图，提供沉浸式的自然语言对话体验。
+*   **OpenClaw 深度集成**：底层通过代理连接至 **OpenClaw Gateway**，复用 OpenClaw 的强大推理与工具调用能力。
+*   **Markdown 支持**：聊天界面原生支持 **Markdown 渲染**（基于 marked.js），能够美观地展示列表、代码块和加粗文本。
+*   **自动化资产录入**：
+    *   助理具备意图识别能力。例如，当你说：“录入一台 10.1.1.1 的 H3C 交换机”时，助理会返回结构化的指令标签。
+    *   前端会自动解析 `ACTION: ADD_ASSET` 标签并静默执行录入操作，无需手动填写表单。
+    *   对话过程中支持“清空历史”重置当前会话。
 
 ### 2.7 LLM 模型与 API 管理
 *   **形态**：全新的独立管理面板，对标 OpenClaw 的 `models` 管理逻辑。
 *   **同步机制**：模型列表**实时同步**自 OpenClaw 配置文件 (`~/.openclaw/openclaw.json`)。
-*   **增删改功能**：在 Dashboard 中添加、编辑或删除模型配置，会**直接同步写回** OpenClaw 配置文件，修改立即生效。无需登录 OpenClaw 即可管理模型。
+*   **高级参数支持**：支持配置每个模型的 `contextWindow` (上下文窗口) 与 `maxTokens` (最大输出)，避免空值导致请求失败。
+*   **设为默认模型**：支持一键将选定模型设为 OpenClaw 的 **Global Primary Model**，修改后 OpenClaw 的所有 Agent 将默认使用该模型。
+*   **增删改功能**：在 Dashboard 中添加、编辑或删除模型配置，会**直接同步写回** OpenClaw 配置文件，修改立即生效。
 
 ## 3. 部署与启动
 
@@ -65,7 +70,7 @@ Dashboard 采用前后端分离的架构：
       ```
     *   默认存在 `admin` 账号（密码：`boos`），首次登录后可在界面中管理用户。
 2.  **Node.js / PM2**：通过包管理器安装（如 `apt install npm`，然后 `npm install -g pm2`），运行 `scripts/setup_env.sh` 时会自动检测并安装。
-3.  **Python 依赖**：后端需安装 `psycopg2` 等模块（由 `setup_env.sh` 自动安装）。
+3.  **Python 依赖**：后端需安装 `psycopg2`, `fastapi`, `httpx`, `uvicorn` 等模块（由 `setup_env.sh` 自动安装）。
 
 ### 启动服务
 
@@ -81,15 +86,16 @@ Dashboard 采用前后端分离的架构：
     ```bash
     pm2 start python3 --name "netops-api" --interpreter python3 -- ./scripts/api_server.py
     ```
-2.  **启动前端 Web 服务** (默认端口 8082)：
+2.  **启动前端 Web 服务** (推荐使用内置 proxy，端口 8082)：
     ```bash
-    pm2 start python3 --name "netops-ui" --interpreter python3 -- -m http.server 8082 --directory ./ui
+    pm2 start python3 --name "netops-ui" --interpreter python3 -- ./ui/serve_ui.py
     ```
 
 > ℹ️ 启动完成后，终端会显示本机 IP 地址，直接访问 `http://<IP>:8082` 即可。
 
 ## 4. 常见问题排查
 
-*   **页面白屏或显示 404**：检查启动 `http.server` 时的执行路径是否正确指向了 `ui/` 目录。
-*   **登录无反应/报错**：检查后端 API（8081端口）是否正常运行；检查 `api_server.py` 内配置的 PostgreSQL 用户名密码是否与实际匹配。
-*   **AI 助手无法添加设备**：确保服务器有写入 `assets/inventory.json` 的权限。前端与后端的跨域请求已通过动态获取 `window.location.hostname` 解决。
+*   **页面白屏**：通常是由于 JS 变量冲突（已在 Commit `1b85d59` 修复）或 `v-cloak` 导致。请确保 `ui/index.html` 中的 Vue 挂载逻辑正确。
+*   **无法加载数据**：检查 `serve_ui.py` 是否正常工作，且 8081 端口的 API 服务是否存活。
+*   **AI 助手不回复**：检查 `openclaw gateway` 是否在运行，以及 `api_server.py` 是否能正确调用 `openclaw agent` 命令。
+*   **资产显示离线**：系统会实时 Ping 目标 IP。如果设备确实在线但显示离线，请检查运行 `api_server.py` 的账号是否有执行 `ping` 命令的权限。
