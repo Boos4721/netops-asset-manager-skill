@@ -8,6 +8,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
@@ -17,6 +18,12 @@
         .sidebar-item.active { background: #3b82f6; color: white; }
         #topology-container { width: 100%; height: 500px; border: 1px solid #e2e8f0; border-radius: 12px; background: white; }
         [v-cloak] { display: none; }
+        .markdown-body ul { list-style-type: disc; margin-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        .markdown-body ol { list-style-type: decimal; margin-left: 1.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; }
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 { font-weight: bold; margin-top: 1rem; margin-bottom: 0.5rem; }
+        .markdown-body code { background: #f1f5f9; padding: 0.2rem 0.4rem; border-radius: 0.25rem; font-family: monospace; }
+        .markdown-body pre { background: #1e293b; color: white; padding: 1rem; border-radius: 0.5rem; margin-top: 0.5rem; margin-bottom: 0.5rem; overflow-x: auto; }
+        .markdown-body p { margin-bottom: 0.5rem; }
     </style>
 </head>
 <body class="overflow-hidden h-screen">
@@ -306,7 +313,7 @@
                                 <div :class="['w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1', msg.from === 'ai' ? 'bg-blue-100 text-blue-600' : 'bg-slate-200 text-slate-600']">
                                     <i :data-lucide="msg.from === 'ai' ? 'bot' : 'user'" class="w-4 h-4"></i>
                                 </div>
-                                <div :class="['px-5 py-3 rounded-2xl text-sm shadow-sm leading-relaxed', msg.from === 'ai' ? 'bg-white border border-slate-100 text-slate-800 rounded-tl-none' : 'bg-blue-600 text-white rounded-tr-none']" style="white-space: pre-wrap;">{{ msg.text }}</div>
+                                <div :class="['px-5 py-3 rounded-2xl text-sm shadow-sm leading-relaxed markdown-body', msg.from === 'ai' ? 'bg-white border border-slate-100 text-slate-800 rounded-tl-none' : 'bg-blue-600 text-white rounded-tr-none']" v-html="renderMarkdown(msg.text)"></div>
                             </div>
                         </div>
                     </div>
@@ -577,6 +584,11 @@
                     if (id === 'chat') scrollChatToBottom();
                 };
                 const onMainScroll = () => {};
+
+                const renderMarkdown = (text) => {
+                    if (!text) return '';
+                    return marked.parse(text);
+                };
                 
                 const stats = ref([
                     { label: '总资产', value: '0', icon: 'server', colorClass: 'bg-blue-100 text-blue-600' },
@@ -903,7 +915,7 @@
 
                 return {
                     isLoggedIn, loginForm, loginError, currentUser, currentView, nav, currentNavLabel, stats, inventory,
-                     userInput, chatHistory, sendMessage, logout,
+                     userInput, chatHistory, sendMessage, logout, renderMarkdown,
                     showPm2Modal, pm2Form, pm2Tasks, deployPm2Task, formatBytes,
                     showUserModal, userForm, dbUsers, createUser, deleteUser,
                     filteredInventory, searchQuery, showDeviceDetailsModal, showDeviceFormModal, selectedDevice, isEditingDevice, deviceForm,
