@@ -513,6 +513,8 @@
             setup() {
                 const API_BASE = ''; // relative path, proxied
                 const isLoggedIn = ref(true); // DEBUG: bypass login
+                const loginForm = ref({ username: '', password: '' });
+                const loginError = ref('');
                 const currentUser = ref({ name: 'admin', role: 'admin' }); // DEBUG
                 
                 const currentView = ref('dashboard');
