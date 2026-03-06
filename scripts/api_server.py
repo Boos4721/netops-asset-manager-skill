@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 from pydantic import BaseModel
 from typing import List, Optional
+import httpx
 
 # Resolve paths
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -18,6 +19,9 @@ MODELS_FILE = os.path.join(ASSETS_DIR, 'models.json')
 LOGS_DIR = os.path.join(ASSETS_DIR, 'logs')
 UPLOAD_DIR = os.path.join(ASSETS_DIR, 'uploads')
 OPENCLAW_CONFIG = os.path.expanduser("~/.openclaw/openclaw.json")
+
+# Gateway config
+GATEWAY_URL = "http://127.0.0.1:18789/v1/chat/completions"
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
@@ -116,9 +120,15 @@ app.add_middleware(
 )
 
 # Pydantic Models for Validation
+class ChatRequest(BaseModel):
+    message: str
+    history: List[dict] = []
+
 class LoginRequest(BaseModel):
     username: str
     password: str
+
+
 
 class UserRequest(BaseModel):
     username: str
@@ -130,6 +140,65 @@ class DeployRequest(BaseModel):
     binary_path: str
     args: str = ""
     target_ips: List[str] = []
+
+@app.post("/api/chat")
+async def chat(req: ChatRequest):
+    """Proxy chat requests to OpenClaw CLI agent"""
+    try:
+        # Build the conversation context
+        system_prompt = """你是一个专业的 NetOps 网络运维助理。你能够帮助用户管理资产、监控任务、分析日志。
+
+**核心能力：资产录入**
+如果用户要求录入或添加资产（例如："录入一台 10.1.1.1 的 H3C 交换机"），请你在回复的最后添加一行特殊的标记：
+`ACTION: ADD_ASSET | IP: <IP地址> | VENDOR: <品牌> | NAME: <设备名>`
+例如：`ACTION: ADD_ASSET | IP: 10.1.1.1 | VENDOR: H3C | NAME: H3C-Switch-01`
+
+请保持专业、简洁、高效的语气。"""
+
+        # Build full prompt with history
+        history_text = ""
+        for msg in req.history[-10:]:
+            role = "User" if msg.get("from") == "user" else "Assistant"
+            history_text += f"{role}: {msg.get('text', '')}\n"
+        
+        full_prompt = f"{system_prompt}\n\n---\n历史对话:\n{history_text}\n---\nUser: {req.message}\nAssistant:"
+        
+        # Call OpenClaw agent via subprocess (use a fixed session for continuity)
+        proc = subprocess.run(
+            ["openclaw", "agent", "--session-id", "netops-chat", "--message", full_prompt, "--timeout", "60", "--json"],
+            capture_output=True,
+            text=True,
+            timeout=90
+        )
+        
+        if proc.returncode == 0:
+            import json
+            try:
+                result = json.loads(proc.stdout)
+                # Extract reply from JSON output
+                reply_text = result.get("reply", "")
+                if reply_text:
+                    # It might be a nested JSON string
+                    try:
+                        inner = json.loads(reply_text)
+                        reply = inner.get("text", inner.get("content", reply_text))
+                    except:
+                        reply = reply_text
+                else:
+                    # Fallback: try to parse from result.result.payloads
+                    payloads = result.get("result", {}).get("payloads", [])
+                    if payloads:
+                        reply = payloads[0].get("text", "")
+                    else:
+                        reply = str(result)
+                return {"status": "success", "reply": reply}
+            except Exception as e:
+                return {"status": "success", "reply": proc.stdout.strip()[:500]}
+        else:
+            return {"status": "error", "message": f"OpenClaw error: {proc.stderr}"}
+                
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 @app.get("/api/inventory")
 async def get_inventory():

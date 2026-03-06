@@ -817,57 +817,74 @@
                 const sendMessage = async () => {
                     if (!userInput.value.trim()) return;
                     const text = userInput.value.trim();
+                    const currentHistory = [...chatHistory.value];
                     chatHistory.value.push({ id: Date.now(), from: 'user', text: text });
                     userInput.value = '';
                     scrollChatToBottom();
                     
-                    // Simple regex mock logic to fix the "entering info" bug
-                    if (text.includes('录入') || text.includes('添加')) {
-                        // try extracting IP
-                        const ipMatch = text.match(/\d{1,3}(\.\d{1,3}){3}/);
-                        const ip = ipMatch ? ipMatch[0] : '192.168.1.99';
+                    try {
+                        // Call our new AI chat endpoint
+                        const res = await fetch(`${API_BASE}/api/chat`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                message: text,
+                                history: currentHistory.slice(-10) // Only send recent history
+                            })
+                        });
                         
-                        // Extract vendor (H3C, Cisco, Huawei, etc)
-                        const vendorMatch = text.match(/[A-Za-z0-9]+/g);
-                        let vendor = 'Generic';
-                        if (vendorMatch) {
-                            const possibleVendors = vendorMatch.filter(v => isNaN(v) && v.length > 2);
-                            if (possibleVendors.length > 0) vendor = possibleVendors[0].toUpperCase();
-                        }
-
-                        setTimeout(async () => {
-                            chatHistory.value.push({ id: Date.now()+1, from: 'ai', text: `正在提交资产录入请求：\nIP: ${ip}\n品牌: ${vendor}\n请稍候...` });
-                            scrollChatToBottom();
+                        const data = await res.json();
+                        
+                        if (data.status === 'success') {
+                            let reply = data.reply;
                             
-                            try {
-                                const res = await fetch(`${API_BASE}/api/inventory/add`, {
+                            // Check for structured actions in AI reply
+                            if (reply.includes('ACTION: ADD_ASSET')) {
+                                const lines = reply.split('\n');
+                                const actionLine = lines.find(l => l.includes('ACTION: ADD_ASSET'));
+                                
+                                // Parse: ACTION: ADD_ASSET | IP: 10.1.1.1 | VENDOR: H3C | NAME: H3C-Switch-01
+                                const parts = actionLine.split('|').reduce((acc, part) => {
+                                    const [k, v] = part.split(':').map(s => s.trim());
+                                    if (k && v) acc[k] = v;
+                                    return acc;
+                                }, {});
+                                
+                                const ip = parts['IP'] || '0.0.0.0';
+                                const vendor = parts['VENDOR'] || 'Generic';
+                                const name = parts['NAME'] || `Auto-${vendor}`;
+                                
+                                // Clean the reply text for display (remove the action tag)
+                                reply = reply.replace(actionLine, '').trim();
+                                
+                                chatHistory.value.push({ id: Date.now()+1, from: 'ai', text: reply });
+                                chatHistory.value.push({ id: Date.now()+2, from: 'ai', text: `🔄 正在后台执行资产录入 (IP: ${ip}, 品牌: ${vendor})...` });
+                                scrollChatToBottom();
+                                
+                                // Execute the actual addition
+                                const addRes = await fetch(`${API_BASE}/api/inventory/add`, {
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        name: `Auto-Device-${vendor}`,
-                                        ip: ip,
-                                        vendor: vendor,
-                                        status: 'online'
-                                    })
+                                    body: JSON.stringify({ name, ip, vendor, status: 'online' })
                                 });
-                                const data = await res.json();
-                                if (data.status === 'success') {
-                                    chatHistory.value.push({ id: Date.now()+2, from: 'ai', text: '✅ 录入成功！数据已更新至底层文件。' });
+                                const addData = await addRes.json();
+                                if (addData.status === 'success') {
+                                    chatHistory.value.push({ id: Date.now()+3, from: 'ai', text: '✅ 资产录入成功！' });
                                     loadData();
                                 } else {
-                                    chatHistory.value.push({ id: Date.now()+2, from: 'ai', text: '❌ 录入失败。' });
+                                    chatHistory.value.push({ id: Date.now()+3, from: 'ai', text: '❌ 录入失败。' });
                                 }
-                                scrollChatToBottom();
-                            } catch (e) {
-                                chatHistory.value.push({ id: Date.now()+2, from: 'ai', text: '❌ 后端API请求失败。' });
-                                scrollChatToBottom();
+                            } else {
+                                // Normal chat reply
+                                chatHistory.value.push({ id: Date.now()+1, from: 'ai', text: reply });
                             }
-                        }, 600);
-                    } else {
-                        setTimeout(() => {
-                            chatHistory.value.push({ id: Date.now()+1, from: 'ai', text: '已收到指令: ' + text + '。目前我的核心能力是“资产录入”，您可以对我说：“帮我录入一台 10.1.1.1 的 H3C 交换机”。' });
-                            scrollChatToBottom();
-                        }, 500);
+                        } else {
+                            chatHistory.value.push({ id: Date.now()+1, from: 'ai', text: '❌ AI 助手响应错误: ' + (data.message || '未知错误') });
+                        }
+                        scrollChatToBottom();
+                    } catch (e) {
+                        chatHistory.value.push({ id: Date.now()+1, from: 'ai', text: '❌ 无法连接到 AI 助手。' });
+                        scrollChatToBottom();
                     }
                 };
 
