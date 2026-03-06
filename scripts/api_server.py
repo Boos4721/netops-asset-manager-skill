@@ -311,13 +311,18 @@ async def add_model(payload: Request):
         
         # Get provider info from request
         provider_name = data.get('provider', 'custom')
+        
+        # Fix: ensure contextWindow and maxTokens are not null
+        context_window = data.get('contextWindow')
+        max_tokens = data.get('maxTokens')
+        
         model_data = {
             'id': data.get('id') or data.get('name', 'custom-model').lower().replace(' ', '-'),
             'name': data.get('name'),
             'reasoning': data.get('reasoning', False),
             'input': data.get('input', ['text']),
-            'contextWindow': data.get('contextWindow'),
-            'maxTokens': data.get('maxTokens'),
+            'contextWindow': int(context_window) if context_window is not None else 4096,
+            'maxTokens': int(max_tokens) if max_tokens is not None else 4096,
             'cost': data.get('cost', {})
         }
         
@@ -350,6 +355,10 @@ async def update_model(model_id: str, payload: Request):
         data = await payload.json()
         providers = get_providers_from_config()
         
+        # Fix: ensure contextWindow and maxTokens are not null
+        context_window = data.get('contextWindow')
+        max_tokens = data.get('maxTokens')
+        
         # Find and update the model
         for provider_name, provider_config in providers.items():
             models = provider_config.get('models', [])
@@ -360,8 +369,8 @@ async def update_model(model_id: str, payload: Request):
                         'name': data.get('name', model.get('name')),
                         'reasoning': data.get('reasoning', model.get('reasoning')),
                         'input': data.get('input', model.get('input')),
-                        'contextWindow': data.get('contextWindow', model.get('contextWindow')),
-                        'maxTokens': data.get('maxTokens', model.get('maxTokens')),
+                        'contextWindow': int(context_window) if context_window is not None else model.get('contextWindow', 4096),
+                        'maxTokens': int(max_tokens) if max_tokens is not None else model.get('maxTokens', 4096),
                         'cost': data.get('cost', model.get('cost', {}))
                     })
                     provider_config['models'] = models
@@ -371,6 +380,35 @@ async def update_model(model_id: str, payload: Request):
                     return {"status": "error", "message": "保存配置失败"}
         
         return {"status": "error", "message": "模型未找到"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/models/set-default")
+async def set_default_model(payload: Request):
+    """Set the primary model for OpenClaw agents"""
+    try:
+        data = await payload.json()
+        model_id = data.get('model_id')
+        provider_name = data.get('provider')
+        
+        if not model_id or not provider_name:
+            return {"status": "error", "message": "Missing model_id or provider"}
+            
+        full_model_id = f"{provider_name}/{model_id}"
+        
+        with open(OPENCLAW_CONFIG, 'r', encoding='utf-8') as f:
+            config = json.load(f)
+            
+        if 'agents' not in config: config['agents'] = {}
+        if 'defaults' not in config['agents']: config['agents']['defaults'] = {}
+        if 'model' not in config['agents']['defaults']: config['agents']['defaults']['model'] = {}
+        
+        config['agents']['defaults']['model']['primary'] = full_model_id
+        
+        with open(OPENCLAW_CONFIG, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=2, ensure_ascii=False)
+            
+        return {"status": "success", "message": f"默认模型已设置为 {full_model_id}"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
 

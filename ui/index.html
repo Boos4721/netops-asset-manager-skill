@@ -286,6 +286,7 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
+                                        <button @click="setDefaultModel(model)" class="text-green-600 hover:text-green-800 font-semibold text-sm mr-3">设为默认</button>
                                         <button @click="editModel(model)" class="text-blue-500 hover:text-blue-700 font-semibold text-sm mr-3">编辑</button>
                                         <button @click="deleteModel(model.id)" class="text-red-500 hover:text-red-700 font-semibold text-sm">删除</button>
                                     </td>
@@ -468,6 +469,14 @@
                         <div class="col-span-2">
                             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">API Key</label>
                             <input v-model="modelForm.api_key" type="password" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="sk-...">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">上下文窗口 (Context Window)</label>
+                            <input v-model="modelForm.contextWindow" type="number" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="4096">
+                        </div>
+                        <div class="col-span-1">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-1">最大 Token (Max Tokens)</label>
+                            <input v-model="modelForm.maxTokens" type="number" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="4096">
                         </div>
                         <div class="col-span-2 flex items-center gap-2 mt-2">
                             <input type="checkbox" v-model="modelForm.enabled" id="model-enabled" class="w-4 h-4 text-blue-600 rounded">
@@ -757,14 +766,35 @@
 
                                 const openAddModelModal = () => {
                     isEditingModel.value = false;
-                    modelForm.value = { name: '', provider: 'openai', base_url: '', api_key: '', enabled: true };
+                    modelForm.value = { name: '', provider: 'openai', base_url: '', api_key: '', enabled: true, contextWindow: 4096, maxTokens: 4096 };
                     showModelFormModal.value = true;
                 };
 
                 const editModel = (model) => {
                     isEditingModel.value = true;
                     modelForm.value = { ...model };
+                    if (!modelForm.value.contextWindow) modelForm.value.contextWindow = 4096;
+                    if (!modelForm.value.maxTokens) modelForm.value.maxTokens = 4096;
                     showModelFormModal.value = true;
+                };
+
+                const setDefaultModel = async (model) => {
+                    if (!confirm(`确认将 ${model.name} 设为 OpenClaw 的全局默认模型?`)) return;
+                    try {
+                        const res = await fetch(`${API_BASE}/api/models/set-default`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ model_id: model.id, provider: model.provider })
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            alert(data.message);
+                        } else {
+                            alert('设置失败: ' + (data.message || ''));
+                        }
+                    } catch (e) {
+                        alert('请求失败');
+                    }
                 };
 
                 const saveModel = async () => {
@@ -919,7 +949,7 @@
                     showPm2Modal, pm2Form, pm2Tasks, deployPm2Task, formatBytes,
                     showUserModal, userForm, dbUsers, createUser, deleteUser,
                     filteredInventory, searchQuery, showDeviceDetailsModal, showDeviceFormModal, selectedDevice, isEditingDevice, deviceForm,
-                    openDeviceDetails, openAddDeviceModal, editDevice, saveDevice, deleteDevice, llmModels, showModelFormModal, isEditingModel, modelForm, openAddModelModal, editModel, saveModel, deleteModel,
+                    openDeviceDetails, openAddDeviceModal, editDevice, saveDevice, deleteDevice, llmModels, showModelFormModal, isEditingModel, modelForm, openAddModelModal, editModel, saveModel, deleteModel, setDefaultModel,
                     handleNav, onMainScroll
                 };
             }
