@@ -219,6 +219,46 @@
                     </div>
                 </div>
 
+                <!-- Deployment View -->
+                <div v-if="currentView === 'deploy'" class="space-y-8 animate-in slide-in-from-right-4 duration-500 pb-20">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
+                            <div class="w-16 h-16 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <i data-lucide="container" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-2">Docker 一键安装</h3>
+                            <p class="text-slate-500 text-sm mb-6 leading-relaxed">自动执行官方脚本安装最新版 Docker Engine 及 Docker Compose。</p>
+                            <button @click="runSystemDeploy('docker')" class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-blue-600 transition-colors">开始执行</button>
+                        </div>
+
+                        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
+                            <div class="w-16 h-16 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <i data-lucide="layers" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-2">pip 安装 vLLM</h3>
+                            <p class="text-slate-500 text-sm mb-6 leading-relaxed">高性能大模型推理框架，支持 PagedAttention 技术。</p>
+                            <button @click="runSystemDeploy('vllm')" class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-orange-600 transition-colors">开始执行</button>
+                        </div>
+
+                        <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm hover:shadow-xl transition-all group">
+                            <div class="w-16 h-16 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                                <i data-lucide="terminal" class="w-8 h-8"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-2">编译 llama.cpp</h3>
+                            <p class="text-slate-500 text-sm mb-6 leading-relaxed">本地量化推理引擎，自动克隆仓库、编译并安装依赖。</p>
+                            <button @click="runSystemDeploy('llama-cpp')" class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-purple-600 transition-colors">开始执行</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-100 p-6 rounded-2xl flex gap-4 items-start">
+                        <i data-lucide="info" class="w-6 h-6 text-blue-500 shrink-0"></i>
+                        <div class="text-sm text-blue-800 leading-relaxed">
+                            <strong>部署须知：</strong>
+                            上述任务将以 PM2 进程形式在后台执行。你可以通过"PM2 任务"页面实时查看安装进度和日志输出。请确保当前机器已连接互联网。
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Users Management (PostgreSQL) -->
                 <div v-if="currentView === 'users'" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden pb-20">
                     <div class="p-6 border-b flex items-center justify-between">
@@ -633,6 +673,7 @@
                     const items = [
                         { id: 'dashboard', label: '资产总览', icon: 'layout-grid' },
                         { id: 'pm2', label: 'PM2 任务', icon: 'play-circle' },
+                        { id: 'deploy', label: '一键部署', icon: 'zap' },
                         { id: 'users', label: '用户管理', icon: 'users' },
                         { id: 'models', label: '模型管理', icon: 'cpu' },
                         { id: 'chat', label: 'AI 助理', icon: 'message-square' }
@@ -657,6 +698,25 @@
                     if (id === 'topology') nextTick(() => initTopology());
                 };
                 const onMainScroll = () => {};
+
+                const runSystemDeploy = async (type) => {
+                    try {
+                        const res = await fetch(`${API_BASE}/api/deploy/system`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ type })
+                        });
+                        const data = await res.json();
+                        if (data.status === 'success') {
+                            alert(data.message);
+                            loadData();
+                        } else {
+                            alert('启动失败: ' + data.message);
+                        }
+                    } catch (e) {
+                        alert('网络请求失败');
+                    }
+                };
 
                 const initTopology = () => {
                     const container = document.getElementById('topology-container');
@@ -1030,7 +1090,7 @@
 
                 return {
                     isLoggedIn, loginForm, loginError, currentUser, currentView, nav, currentNavLabel, stats, inventory,
-                     userInput, chatHistory, sendMessage, logout, renderMarkdown, experimentalFeatures, saveExperimental, initTopology,
+                     userInput, chatHistory, sendMessage, logout, renderMarkdown, experimentalFeatures, saveExperimental, initTopology, runSystemDeploy,
                     showPm2Modal, pm2Form, pm2Tasks, deployPm2Task, formatBytes,
                     showUserModal, userForm, dbUsers, createUser, deleteUser,
                     filteredInventory, searchQuery, showDeviceDetailsModal, showDeviceFormModal, selectedDevice, isEditingDevice, deviceForm,

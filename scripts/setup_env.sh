@@ -234,9 +234,9 @@ get_local_ip() {
     echo "$ip"
 }
 
-echo "❓ $(t '是否启动 NetOps Dashboard (API与Web界面)? [Y/n]' 'Do you want to start the NetOps Dashboard (API & UI)? [Y/n]')"
+echo "❓ $(t '是否启动 NetOps Dashboard (API与Web界面)? [Y/n] (默认 Y)' 'Do you want to start the NetOps Dashboard (API & UI)? [Y/n] (Default Y)')"
 read -r -p " > " START_DASHBOARD
-if [[ "$START_DASHBOARD" =~ ^([yY][eE][sS]|[yY]|)$ ]]; then
+if [[ -z "$START_DASHBOARD" || "$START_DASHBOARD" =~ ^([yY][eE][sS]|[yY])$ ]]; then
     echo "🚀 $(t '正在通过 PM2 启动后台服务...' 'Starting backend services via PM2...')"
     pm2 delete netops-api netops-ui 2>/dev/null || true
     pm2 start python3 --name "netops-api" -- "$REPO_ROOT/scripts/api_server.py"

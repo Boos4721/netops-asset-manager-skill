@@ -140,6 +140,31 @@ class DeployRequest(BaseModel):
     args: str = ""
     target_ips: List[str] = []
 
+class SystemDeployRequest(BaseModel):
+    type: str  # 'docker', 'vllm', 'llama-cpp'
+
+@app.post("/api/deploy/system")
+async def deploy_system_feature(req: SystemDeployRequest):
+    """Execute system-level deployment tasks in background via PM2/Subprocess"""
+    commands = {
+        "docker": "curl -fsSL https://get.docker.com | sh",
+        "vllm": "pip install vllm",
+        "llama-cpp": "git clone https://github.com/ggerganov/llama.cpp.git /tmp/llama.cpp && cd /tmp/llama.cpp && make"
+    }
+    
+    cmd = commands.get(req.type)
+    if not cmd:
+        raise HTTPException(status_code=400, detail="Invalid deployment type")
+        
+    try:
+        # Use PM2 to run these as one-shot tasks so we can monitor them in the UI
+        task_name = f"deploy-{req.type}-{os.urandom(2).hex()}"
+        pm2_cmd = ["pm2", "start", cmd, "--name", task_name, "--no-autorestart"]
+        subprocess.Popen(pm2_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return {"status": "success", "message": f"任务 {task_name} 已在后台启动，请在 PM2 列表中查看进度。"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 @app.post("/api/chat")
 async def chat(req: ChatRequest):
     """Proxy chat requests to OpenClaw CLI agent"""
