@@ -149,7 +149,7 @@ async def deploy_system_feature(req: SystemDeployRequest):
     commands = {
         "docker": "curl -fsSL https://get.docker.com | sh",
         "vllm": "pip install vllm",
-        "llama-cpp": "git clone https://github.com/ggerganov/llama.cpp.git /tmp/llama.cpp && cd /tmp/llama.cpp && make"
+        "llama-cpp": "git clone --depth=1 https://edgeone.gh-proxy.org/https://github.com/ggerganov/llama.cpp.git /tmp/llama.cpp && cd /tmp/llama.cpp && if command -v nvidia-smi > /dev/null; then make GGML_CUDA=1; else make; fi"
     }
     
     cmd = commands.get(req.type)
