@@ -10,6 +10,7 @@ import uvicorn
 from pydantic import BaseModel
 from typing import List, Optional
 import httpx
+from health_prober import ping_check
 
 # Resolve paths
 SKILL_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -202,7 +203,14 @@ async def chat(req: ChatRequest):
 
 @app.get("/api/inventory")
 async def get_inventory():
-    return read_json(INVENTORY_FILE)
+    inventory = read_json(INVENTORY_FILE)
+    # Perform real-time health check
+    for device in inventory:
+        ip = device.get('ip')
+        if ip:
+            is_online = ping_check(ip)
+            device['status'] = 'online' if is_online else 'offline'
+    return inventory
 
 @app.post("/api/inventory/add")
 async def add_inventory(payload: Request):
