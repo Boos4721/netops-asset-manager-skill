@@ -19,6 +19,7 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 - **Cloud Native & DevOps**: Streamlined maintenance for **Docker**, **Kubernetes (K8s)**, and **Nginx**.
 - **Virtualization Support**: Advanced management for **VMware ESXi**, **OpenStack**, **QEMU/KVM**, and **LXC** (Proxmox compatible).
 - **GPU Maintenance**: Support for **NVIDIA** and **AMD** driver installation (official CN/HK sources) and health monitoring.
+- **Remote Control & SSH**: Integrated **Direct SSH Login** (one-click) and **Remote Reboot** with user/password credential management.
 - **Network Performance**: Integrated tools for **Speedtest**, **Route Tracing (MTR)**, and **Subnet Scanning (Nmap)**.
 - **Real-time Health Check**: High-performance asynchronous parallel Ping detection for instant device status updates.
 - **Web Dashboard**: Modern SPA (Vue 3 + Tailwind) with Pro Dark Aesthetic, AI Assistant (OpenClaw powered), Markdown support, LLM API Model Management, Topology Visualization, and PM2 Task Management.
@@ -67,6 +68,7 @@ This project is licensed under the **CC BY-NC 4.0**. **Commercial use is strictl
 - **DevOps 与云原生**：集成 **Docker**、**Kubernetes** 及 **Nginx** 的自动化维护。
 - **虚拟化管理**：支持 **VMware ESXi**、**OpenStack**、**QEMU/KVM** 及 **LXC** (Proxmox 兼容)。
 - **显卡运维 (GPU)**：支持 **NVIDIA (N卡)** 与 **AMD (A卡)** 官网驱动静默安装及高温/显存监控。
+- **远程控制与 SSH**：集成 **SSH 一键直连**、**远程重启**及 SSH 凭据（用户名/密码）安全管理。
 - **网络性能监测**：集成 **Speedtest**、**MTR 路由追踪**及 **Nmap 网段发现**。
 - **实时健康检查**：采用高性能 **Asynchronous (asyncio)** 并行 Ping 探测，实现资产状态的即时更新。
 - **现代化 Web 看板 (Dashboard)**：基于 Vue 3 + Tailwind 构建，集成 OpenClaw 驱动的 AI 助理（支持 Markdown 渲染）、LLM 大模型管理、网络拓扑可视化与 PM2 进程管理。

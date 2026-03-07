@@ -143,6 +143,32 @@ class DeployRequest(BaseModel):
 class SystemDeployRequest(BaseModel):
     type: str  # 'docker', 'vllm', 'llama-cpp'
 
+class RenameRequest(BaseModel):
+    new_name: str
+
+class ScheduleRequest(BaseModel):
+    cron: str
+
+@app.post("/api/pm2/rename/{task_name}")
+async def rename_pm2_task(task_name: str, req: RenameRequest):
+    """Rename a PM2 task using restart --name"""
+    try:
+        subprocess.check_call(["pm2", "restart", task_name, "--name", req.new_name])
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/pm2/schedule/{task_name}")
+async def schedule_pm2_task(task_name: str, req: ScheduleRequest):
+    """Update PM2 task schedule (cron)"""
+    try:
+        # PM2 doesn't have a direct 'update-cron' for existing tasks.
+        # We need to restart the task with the --cron flag.
+        subprocess.check_call(["pm2", "restart", task_name, "--cron", req.cron])
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
 @app.post("/api/deploy/system")
 async def deploy_system_feature(req: SystemDeployRequest):
     """Execute system-level deployment tasks in background via PM2/Subprocess"""
@@ -488,6 +514,83 @@ async def get_pm2_status():
         return tasks
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/pm2/logs/{task_name}")
+async def get_pm2_logs(task_name: str, lines: int = 100):
+    """Fetch logs for a PM2 task"""
+    try:
+        # Use pm2 logs <name> --lines <n> --nostream
+        # But jlist/desc might be better to find paths.
+        # Simplest is 'pm2 logs <name> --lines <n> --raw'
+        result = subprocess.check_output(["pm2", "logs", task_name, "--lines", str(lines), "--nostream", "--raw"], stderr=subprocess.STDOUT).decode()
+        return {"status": "success", "logs": result}
+    except subprocess.CalledProcessError as e:
+        return {"status": "error", "message": e.output.decode() if e.output else str(e)}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.delete("/api/pm2/delete/{task_name}")
+async def delete_pm2_task(task_name: str):
+    """Delete a PM2 task"""
+    try:
+        subprocess.check_call(["pm2", "delete", task_name])
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/pm2/restart/{task_name}")
+async def restart_pm2_task(task_name: str):
+    """Restart a PM2 task"""
+    try:
+        subprocess.check_call(["pm2", "restart", task_name])
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.post("/api/pm2/stop/{task_name}")
+async def stop_pm2_task(task_name: str):
+    """Stop a PM2 task"""
+    try:
+        subprocess.check_call(["pm2", "stop", task_name])
+        return {"status": "success"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/system/info")
+async def get_system_info():
+    """Get kernel and system version info"""
+    try:
+        # User requested specific strings but also auto-fetching. 
+        # I'll fetch kernel dynamically but keep other strings as requested.
+        kernel = subprocess.check_output(["uname", "-srv"]).decode().strip()
+        
+        return {
+            "version": "v2026.3.7-Quantum",
+            "kernel": kernel,
+            "last_audit": "2026-03-07 18:35",
+            "status": "Enterprise Certified"
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+class RebootRequest(BaseModel):
+    user: str = "root"
+    password: Optional[str] = ""
+
+@app.post("/api/inventory/reboot/{ip}")
+async def reboot_device(ip: str, req: RebootRequest):
+    """Reboot a device via SSH with provided credentials"""
+    try:
+        # Construct SSH command with sshpass if password is provided
+        if req.password:
+            cmd = ["sshpass", "-p", req.password, "ssh", "-o", "ConnectTimeout=5", "-o", "StrictHostKeyChecking=no", f"{req.user}@{ip}", "reboot"]
+        else:
+            cmd = ["ssh", "-o", "ConnectTimeout=5", "-o", "StrictHostKeyChecking=no", f"{req.user}@{ip}", "reboot"]
+            
+        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return {"status": "success", "message": f"已向 {ip} (用户: {req.user}) 发送重启指令"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
 
 @app.post("/api/pm2/deploy")
 async def deploy_pm2_task(req: DeployRequest):
