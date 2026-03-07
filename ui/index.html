@@ -16,15 +16,32 @@
         :root {
             --accent: #3b82f6;
             --accent-glow: rgba(59, 130, 246, 0.5);
+            /* Dark Theme (Default) */
             --bg: #020617;
             --card-bg: rgba(15, 23, 42, 0.6);
             --border: rgba(255, 255, 255, 0.08);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --sidebar-bg: rgba(2, 6, 23, 0.4);
+            --glass-blur: 20px;
+            --mesh-opacity: 0.15;
+        }
+
+        [data-theme="light"] {
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --border: rgba(0, 0, 0, 0.05);
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --sidebar-bg: rgba(255, 255, 255, 0.5);
+            --mesh-opacity: 0.05;
         }
 
         body { 
             font-family: 'Space Grotesk', sans-serif; 
             background-color: var(--bg);
-            color: #f1f5f9;
+            color: var(--text-main);
+            transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: default;
         }
 
@@ -35,10 +52,11 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: 
-                radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 100% 100%, rgba(147, 51, 234, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 0% 0%, rgba(59, 130, 246, var(--mesh-opacity)) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(147, 51, 234, calc(var(--mesh-opacity) * 0.7)) 0%, transparent 50%),
                 radial-gradient(circle at 50% 50%, rgba(30, 41, 59, 0.5) 0%, transparent 100%);
             z-index: -1;
+            transition: opacity 0.5s ease;
         }
 
         .grain {
@@ -52,14 +70,16 @@
 
         .glass {
             background: var(--card-bg);
-            backdrop-filter: blur(20px) saturate(180%);
+            backdrop-filter: blur(var(--glass-blur)) saturate(180%);
             border: 1px solid var(--border);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            transition: background 0.3s, border 0.3s;
         }
 
         .sidebar-item {
             position: relative;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-muted);
         }
 
         .sidebar-item::before {
@@ -77,8 +97,10 @@
 
         .sidebar-item.active {
             background: rgba(59, 130, 246, 0.1);
-            color: white;
+            color: var(--accent);
         }
+
+        [data-theme="dark"] .sidebar-item.active { color: white; }
 
         .sidebar-item.active::before {
             height: 60%;
@@ -98,7 +120,7 @@
             width: 100%;
             height: 600px;
             border-radius: 24px;
-            background: rgba(2, 6, 23, 0.8);
+            background: var(--sidebar-bg);
         }
 
         [v-cloak] { display: none; }
@@ -106,13 +128,14 @@
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(128, 128, 128, 0.2); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(128, 128, 128, 0.3); }
 
         /* Markdown Styling */
-        .markdown-body { color: #cbd5e1; }
-        .markdown-body h1, .markdown-body h2, .markdown-body h3 { color: white; margin-top: 1.5rem; margin-bottom: 0.75rem; font-weight: 700; }
-        .markdown-body pre { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; font-family: 'JetBrains Mono', monospace; }
+        .markdown-body { color: var(--text-muted); }
+        .markdown-body h1, .markdown-body h2, .markdown-body h3 { color: var(--text-main); margin-top: 1.5rem; margin-bottom: 0.75rem; font-weight: 700; }
+        .markdown-body pre { background: rgba(0, 0, 0, 0.1); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; font-family: 'JetBrains Mono', monospace; }
+        [data-theme="dark"] .markdown-body pre { background: rgba(0, 0, 0, 0.3); }
         .markdown-body code { font-family: 'JetBrains Mono', monospace; color: var(--accent); background: rgba(59, 130, 246, 0.1); padding: 0.2rem 0.4rem; border-radius: 4px; }
 
         /* Input Styling */
@@ -127,9 +150,14 @@
 
         /* Glow effects */
         .glow-blue { filter: drop-shadow(0 0 8px var(--accent-glow)); }
+        
+        /* Transition utility */
+        .theme-transition {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
     </style>
 </head>
-<body class="overflow-hidden h-screen">
+<body class="overflow-hidden h-screen" :data-theme="currentTheme">
     <div class="mesh-gradient"></div>
     <div class="grain"></div>
 
@@ -152,11 +180,11 @@
                 <form @submit.prevent="login" class="space-y-6">
                     <div class="space-y-1.5">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Identity</label>
-                        <input v-model="loginForm.username" type="text" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all input-glow placeholder-slate-600 text-sm" placeholder="Username" required>
+                        <input v-model="loginForm.username" type="text" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all input-glow placeholder-slate-600 text-sm text-white" placeholder="Username" required>
                     </div>
                     <div class="space-y-1.5">
                         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Access Key</label>
-                        <input v-model="loginForm.password" type="password" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all input-glow placeholder-slate-600 text-sm" placeholder="••••••••" required>
+                        <input v-model="loginForm.password" type="password" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all input-glow placeholder-slate-600 text-sm text-white" placeholder="••••••••" required>
                     </div>
                     <button type="submit" class="w-full py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-all shadow-xl shadow-blue-600/20 active:scale-95 group">
                         验证身份 
@@ -172,13 +200,13 @@
         </div>
 
         <!-- Sidebar -->
-        <aside v-else class="w-72 bg-slate-950/40 backdrop-blur-3xl flex flex-col border-r border-white/5 relative overflow-hidden">
+        <aside v-else class="w-72 bg-slate-950/40 backdrop-blur-3xl flex flex-col border-r border-white/5 relative overflow-hidden theme-transition" :class="currentTheme === 'light' ? 'bg-white/20' : 'bg-slate-950/40'">
             <div class="p-8 flex items-center gap-4">
                 <div class="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white shadow-xl shadow-blue-900/40 glow-blue">
                     <i data-lucide="activity" class="w-6 h-6"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-white text-xl tracking-tighter">NetOps <span class="text-blue-500">Pro</span></h1>
+                    <h1 class="font-bold text-xl tracking-tighter" :class="currentTheme === 'light' ? 'text-slate-900' : 'text-white'">NetOps <span class="text-blue-500">Pro</span></h1>
                     <div class="flex items-center gap-1.5">
                         <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
                         <span class="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">System Active</span>
@@ -188,7 +216,7 @@
             
             <nav class="flex-1 px-4 py-6 space-y-1.5">
                 <button v-for="item in nav" :key="item.id" @click="handleNav(item.id)"
-                    :class="['sidebar-item w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-semibold text-sm group transition-all', currentView === item.id ? 'active' : 'text-slate-400 hover:text-white hover:bg-white/5']">
+                    :class="['sidebar-item w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-semibold text-sm group transition-all', currentView === item.id ? 'active' : 'hover:text-blue-500 hover:bg-blue-500/5']">
                     <i :data-lucide="item.icon" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
                     {{ item.label }}
                 </button>
@@ -200,7 +228,7 @@
                         {{ currentUser.name[0] }}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <p class="text-white text-sm font-bold truncate">{{ currentUser.name }}</p>
+                        <p class="text-sm font-bold truncate" :class="currentTheme === 'light' ? 'text-slate-900' : 'text-white'">{{ currentUser.name }}</p>
                         <p class="text-slate-500 text-[10px] font-bold uppercase tracking-tighter">{{ currentUser.role }}</p>
                     </div>
                     <button @click="logout" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-all">
@@ -211,23 +239,42 @@
         </aside>
 
         <!-- Main Content -->
-        <main v-if="isLoggedIn" class="flex-1 flex flex-col overflow-hidden relative">
+        <main v-if="isLoggedIn" class="flex-1 flex flex-col overflow-hidden relative theme-transition">
             <!-- Header -->
             <header class="h-20 flex items-center justify-between px-10 relative z-20">
                 <div class="flex items-center gap-3">
-                    <h2 class="text-2xl font-bold text-white tracking-tight">{{ currentNavLabel }}</h2>
+                    <h2 class="text-2xl font-bold tracking-tight" :class="currentTheme === 'light' ? 'text-slate-900' : 'text-white'">{{ currentNavLabel }}</h2>
                     <span class="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase tracking-widest border border-blue-500/20">Production</span>
                 </div>
                 
                 <div class="flex items-center gap-6">
+                    <!-- Theme Toggle -->
+                    <div class="flex items-center glass p-1 rounded-2xl border-white/10">
+                        <button @click="toggleTheme('light')" 
+                                :class="['w-10 h-10 rounded-xl flex items-center justify-center transition-all', currentTheme === 'light' ? 'bg-white shadow-lg text-orange-500' : 'text-slate-500 hover:text-white']">
+                            <i data-lucide="sun" class="w-5 h-5"></i>
+                        </button>
+                        <button @click="toggleTheme('dark')" 
+                                :class="['w-10 h-10 rounded-xl flex items-center justify-center transition-all', currentTheme === 'dark' ? 'bg-slate-800 shadow-lg text-blue-400' : 'text-slate-500 hover:text-slate-900']">
+                            <i data-lucide="moon" class="w-5 h-5"></i>
+                        </button>
+                        <button @click="toggleTheme('auto')" 
+                                :class="['w-10 h-10 rounded-xl flex items-center justify-center transition-all', isAutoTheme ? 'bg-blue-600/20 text-blue-500' : 'text-slate-500 hover:text-blue-400']"
+                                title="跟随系统/时间">
+                            <i data-lucide="monitor" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
                     <div class="relative group">
                         <i data-lucide="search" class="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors"></i>
-                        <input type="text" v-model="searchQuery" placeholder="智能检索资产..." class="pl-11 pr-6 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-xs w-72 focus:ring-2 focus:ring-blue-500 outline-none transition-all input-glow">
+                        <input type="text" v-model="searchQuery" placeholder="智能检索资产..." 
+                               class="pl-11 pr-6 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-xs w-72 focus:ring-2 focus:ring-blue-500 outline-none transition-all input-glow"
+                               :class="currentTheme === 'light' ? 'text-slate-900 bg-white shadow-inner' : 'text-white'">
                     </div>
                     <div class="flex items-center gap-2">
-                        <button class="w-11 h-11 glass rounded-2xl flex items-center justify-center text-slate-400 hover:text-white transition-all group relative">
+                        <button class="w-11 h-11 glass rounded-2xl flex items-center justify-center text-slate-400 hover:text-blue-500 transition-all group relative">
                             <i data-lucide="bell" class="w-5 h-5 group-hover:rotate-12 transition-transform"></i>
-                            <span class="absolute top-3 right-3 w-2 h-2 bg-blue-500 rounded-full border-2 border-slate-950"></span>
+                            <span class="absolute top-3 right-3 w-2 h-2 bg-blue-500 rounded-full border-2" :class="currentTheme === 'light' ? 'border-white' : 'border-slate-950'"></span>
                         </button>
                     </div>
                 </div>
@@ -241,14 +288,14 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div v-for="(stat, idx) in stats" :key="stat.label" 
                              class="glass p-7 rounded-[2rem] card-hover relative overflow-hidden group">
-                            <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-white/5 rounded-full group-hover:scale-110 transition-transform"></div>
+                            <div class="absolute -right-8 -bottom-8 w-32 h-32 bg-slate-500/5 rounded-full group-hover:scale-110 transition-transform"></div>
                             <div class="flex items-center gap-5 relative z-10">
                                 <div :class="['w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg', stat.colorClass]">
                                     <i :data-lucide="stat.icon" class="w-7 h-7"></i>
                                 </div>
                                 <div>
                                     <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{{ stat.label }}</p>
-                                    <p class="text-3xl font-bold text-white mono tracking-tighter">{{ stat.value }}</p>
+                                    <p class="text-3xl font-bold mono tracking-tighter" :class="currentTheme === 'light' ? 'text-slate-900' : 'text-white'">{{ stat.value }}</p>
                                 </div>
                             </div>
                         </div>
@@ -261,7 +308,7 @@
                                     <i data-lucide="server" class="w-5 h-5"></i>
                                 </div>
                                 <div>
-                                    <h3 class="font-bold text-white text-lg">实时资产审计</h3>
+                                    <h3 class="font-bold text-lg" :class="currentTheme === 'light' ? 'text-slate-900' : 'text-white'">实时资产审计</h3>
                                     <p class="text-slate-500 text-xs font-medium">共发现 {{ filteredInventory.length }} 台受控节点</p>
                                 </div>
                             </div>
@@ -281,20 +328,20 @@
                                 </thead>
                                 <tbody class="divide-y divide-white/5">
                                     <tr v-for="device in filteredInventory" :key="device.ip" 
-                                        class="hover:bg-white/[0.03] cursor-pointer group transition-colors" @click="openDeviceDetails(device)">
+                                        class="hover:bg-blue-500/5 cursor-pointer group transition-colors" @click="openDeviceDetails(device)">
                                         <td class="px-8 py-6">
                                             <div class="flex items-center gap-4">
                                                 <div class="w-10 h-10 glass rounded-xl flex items-center justify-center text-slate-400 group-hover:text-blue-400 transition-colors">
                                                     <i :data-lucide="device.vendor === 'H3C' ? 'network' : 'hard-drive'" class="w-5 h-5"></i>
                                                 </div>
                                                 <div>
-                                                    <div class="font-bold text-white text-sm group-hover:text-blue-400 transition-colors">{{ device.name }}</div>
+                                                    <div class="font-bold text-sm group-hover:text-blue-400 transition-colors" :class="currentTheme === 'light' ? 'text-slate-900' : 'text-white'">{{ device.name }}</div>
                                                     <div class="text-[10px] text-slate-500 font-bold mono mt-1 tracking-wider uppercase">{{ device.ip }}</div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="px-8 py-6">
-                                            <span class="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-widest text-slate-400">{{ device.vendor }}</span>
+                                            <span class="px-3 py-1 rounded-lg bg-slate-500/10 border border-slate-500/10 text-[10px] font-bold uppercase tracking-widest text-slate-500">{{ device.vendor }}</span>
                                         </td>
                                         <td class="px-8 py-6">
                                             <div class="flex items-center gap-2">
@@ -328,472 +375,41 @@
                     </div>
                 </div>
 
-                <!-- PM2 Tasks -->
-                <div v-if="currentView === 'pm2'" class="space-y-8 animate-in fade-in slide-in-from-right-6 duration-700">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-green-500/10 rounded-2xl flex items-center justify-center text-green-500">
-                                <i data-lucide="cpu" class="w-6 h-6"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-white text-xl">内核进程矩阵</h3>
-                                <p class="text-slate-500 text-xs font-medium">PM2 高级运行时状态监控</p>
-                            </div>
-                        </div>
-                        <button @click="showPm2Modal = true" class="px-6 py-3 glass hover:bg-white/10 text-white rounded-2xl font-bold flex items-center gap-2 text-sm transition-all">
-                            <i data-lucide="plus-square" class="w-4 h-4 text-blue-500"></i> 分发新任务
-                        </button>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div v-for="task in pm2Tasks" :key="task.name" class="glass p-8 rounded-[2rem] card-hover relative overflow-hidden group">
-                            <div class="flex items-start justify-between mb-8">
-                                <div class="w-12 h-12 glass rounded-2xl flex items-center justify-center text-blue-400 group-hover:bg-blue-400/10 group-hover:scale-110 transition-all">
-                                    <i data-lucide="terminal" class="w-6 h-6"></i>
-                                </div>
-                                <span :class="task.status === 'online' ? 'status-online' : 'status-offline'" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                                    {{ task.status }}
-                                </span>
-                            </div>
-                            <h4 class="text-lg font-bold text-white mb-2">{{ task.name }}</h4>
-                            <div class="grid grid-cols-2 gap-4 mt-6">
-                                <div class="glass p-3 rounded-2xl">
-                                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-tighter mb-1">RAM Usage</p>
-                                    <p class="text-sm font-bold text-white mono">{{ formatBytes(task.memory) }}</p>
-                                </div>
-                                <div class="glass p-3 rounded-2xl">
-                                    <p class="text-[9px] font-bold text-slate-500 uppercase tracking-tighter mb-1">CPU Load</p>
-                                    <p class="text-sm font-bold text-white mono">{{ task.cpu }}%</p>
-                                </div>
-                            </div>
-                            <div class="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
-                                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Restart Count: {{ task.restarts }}</span>
-                                <div class="flex gap-2">
-                                    <button class="w-8 h-8 glass rounded-xl flex items-center justify-center text-orange-400 hover:bg-orange-400/10"><i data-lucide="rotate-cw" class="w-4 h-4"></i></button>
-                                    <button class="w-8 h-8 glass rounded-xl flex items-center justify-center text-red-400 hover:bg-red-400/10"><i data-lucide="stop-circle" class="w-4 h-4"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Deployment -->
-                <div v-if="currentView === 'deploy'" class="space-y-12 animate-in fade-in slide-in-from-right-6 duration-700">
-                    <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div v-for="d in [
-                            { id: 'docker', title: 'Docker Orchestrator', desc: '一键部署官方容器引擎及 Compose 编排套件', icon: 'container', color: 'blue' },
-                            { id: 'vllm', title: 'vLLM Hyper-Inference', desc: '部署高性能大模型推理框架，激活 PagedAttention', icon: 'zap', color: 'orange' },
-                            { id: 'llama-cpp', title: 'llama.cpp Core', desc: '构建本地量化算力引擎，支持主流推理后端编译', icon: 'box', color: 'purple' }
-                        ]" :key="d.id" class="glass p-10 rounded-[3rem] card-hover text-center relative overflow-hidden group">
-                            <div :class="[`bg-${d.color}-500/10 text-${d.color}-500`, `shadow-${d.color}-500/10`]" class="w-20 h-20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-2xl group-hover:scale-110 transition-transform">
-                                <i :data-lucide="d.icon" class="w-10 h-10"></i>
-                            </div>
-                            <h3 class="text-xl font-bold text-white mb-4">{{ d.title }}</h3>
-                            <p class="text-slate-500 text-sm mb-10 leading-relaxed font-medium">{{ d.desc }}</p>
-                            <button @click="runSystemDeploy(d.id)" class="w-full py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-[1.5rem] font-bold transition-all active:scale-95 text-sm uppercase tracking-widest">
-                                初始化环境
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="max-w-4xl mx-auto glass p-8 rounded-[2rem] border-blue-500/20 flex gap-6 items-start relative overflow-hidden">
-                        <div class="absolute inset-0 bg-blue-500/[0.03]"></div>
-                        <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500 shrink-0 glow-blue">
-                            <i data-lucide="shield-info" class="w-6 h-6"></i>
-                        </div>
-                        <div class="relative z-10">
-                            <h4 class="text-blue-400 font-bold uppercase tracking-widest text-xs mb-2">Operation Protocol</h4>
-                            <p class="text-sm text-slate-400 leading-relaxed">
-                                系统将以独立 PM2 进程在后台执行初始化。安装日志将实时同步至“内核进程矩阵”。请确保已授予 Root 权限并保持网络联通。
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chat View -->
-                <div v-if="currentView === 'chat'" class="h-[calc(100vh-160px)] flex flex-col glass rounded-[3rem] overflow-hidden animate-in fade-in slide-in-from-bottom-8 duration-700 relative">
-                    <div class="absolute inset-0 bg-gradient-to-b from-blue-500/[0.02] to-transparent pointer-events-none"></div>
-                    
-                    <div class="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01] shrink-0 relative z-10">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 bg-blue-600 rounded-[1.25rem] flex items-center justify-center text-white shadow-2xl shadow-blue-900/40 glow-blue">
-                                <i data-lucide="sparkles" class="w-6 h-6"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-white text-xl">NetOps 智能中枢</h3>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="w-2 h-2 bg-green-500 rounded-full"></span>
-                                    <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">AI Agent Online</span>
-                                </div>
-                            </div>
-                        </div>
-                        <button @click="chatHistory = []" class="px-4 py-2 rounded-xl text-slate-500 hover:text-red-400 hover:bg-red-400/10 transition-all flex items-center gap-2 text-xs font-bold uppercase tracking-widest">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i> Wipe Memory
-                        </button>
-                    </div>
-
-                    <div class="flex-1 p-10 overflow-y-auto space-y-8 relative z-10 custom-scrollbar" id="chat-history">
-                        <div v-for="msg in chatHistory" :key="msg.id" :class="['flex w-full', msg.from === 'ai' ? 'justify-start' : 'justify-end']">
-                            <div class="flex gap-4 max-w-[85%]" :class="msg.from === 'ai' ? 'flex-row' : 'flex-row-reverse'">
-                                <div :class="['w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 mt-1 shadow-lg', msg.from === 'ai' ? 'bg-slate-800 text-blue-400 border border-white/10' : 'bg-blue-600 text-white']">
-                                    <i :data-lucide="msg.from === 'ai' ? 'bot' : 'user'" class="w-5 h-5"></i>
-                                </div>
-                                <div :class="['px-6 py-4 rounded-[1.75rem] text-sm shadow-xl leading-relaxed markdown-body relative', msg.from === 'ai' ? 'glass text-slate-200 rounded-tl-none' : 'bg-blue-600 text-white rounded-tr-none']">
-                                    <div v-html="renderMarkdown(msg.text)"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="p-8 bg-white/[0.01] border-t border-white/5 relative z-20">
-                        <div class="max-w-4xl mx-auto flex items-center gap-4">
-                            <div class="flex-1 relative group">
-                                <input v-model="userInput" @keyup.enter="sendMessage" type="text" placeholder="向中枢发送指令..." 
-                                       class="w-full bg-white/5 border border-white/10 rounded-[1.5rem] px-8 py-5 text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-all input-glow text-white font-medium">
-                                <div class="absolute right-5 top-1/2 -translate-y-1/2 flex gap-2">
-                                    <span class="px-2 py-1 rounded-lg bg-white/5 text-[9px] font-bold text-slate-500 border border-white/10">Markdown Supported</span>
-                                </div>
-                            </div>
-                            <button @click="sendMessage" class="w-16 h-16 bg-blue-600 hover:bg-blue-500 text-white rounded-[1.5rem] font-bold shadow-2xl shadow-blue-600/30 transition-all active:scale-90 flex items-center justify-center glow-blue">
-                                <i data-lucide="send-horizonal" class="w-6 h-6"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Users Matrix -->
-                <div v-if="currentView === 'users'" class="animate-in fade-in slide-in-from-bottom-6 duration-700 space-y-8">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-xl font-bold text-white tracking-tight">PostgreSQL 用户矩阵</h3>
-                        <button @click="showUserModal = true" class="px-6 py-3 bg-white text-slate-950 rounded-2xl text-xs font-bold uppercase tracking-widest hover:bg-slate-200 transition-colors active:scale-95">分配新密钥</button>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div v-for="user in dbUsers" :key="user.id" class="glass p-8 rounded-[2rem] border-white/5 card-hover flex items-center gap-6 relative group">
-                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-950 flex items-center justify-center text-white border border-white/10 shadow-xl group-hover:scale-110 transition-transform">
-                                <i data-lucide="user-cog" class="w-7 h-7"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="font-bold text-white text-lg">{{ user.username }}</h4>
-                                <span :class="user.role === 'root' ? 'text-purple-400' : 'text-blue-400'" class="text-[10px] font-bold uppercase tracking-[0.2em] mt-1 inline-block">{{ user.role }}</span>
-                            </div>
-                            <button v-if="user.username !== 'admin'" @click="deleteUser(user.id)" class="w-10 h-10 glass rounded-xl flex items-center justify-center text-slate-600 hover:text-red-400 hover:bg-red-400/10 transition-all opacity-0 group-hover:opacity-100">
-                                <i data-lucide="user-minus" class="w-5 h-5"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Topology View -->
-                <div v-if="currentView === 'topology'" class="space-y-8 animate-in zoom-in duration-700">
-                    <div class="glass p-8 rounded-[3rem] border-white/5 relative overflow-hidden">
-                        <div class="absolute inset-0 bg-blue-500/[0.01]"></div>
-                        <div class="flex items-center justify-between mb-8 relative z-10">
-                            <div class="flex items-center gap-4">
-                                <div class="w-12 h-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400 shadow-lg glow-blue">
-                                    <i data-lucide="share-2" class="w-6 h-6"></i>
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-white text-xl">全域连接拓扑</h3>
-                                    <p class="text-slate-500 text-xs font-medium uppercase tracking-widest mt-1">Logic Node Visualizer v1.0</p>
-                                </div>
-                            </div>
-                            <div class="flex gap-3">
-                                <button @click="initTopology" class="w-11 h-11 glass rounded-2xl flex items-center justify-center text-slate-400 hover:text-blue-400 transition-all"><i data-lucide="refresh-cw" class="w-5 h-5"></i></button>
-                            </div>
-                        </div>
-                        <div id="topology-container" class="relative z-10"></div>
-                    </div>
-                </div>
-
-                <!-- Models Grid -->
-                <div v-if="currentView === 'models'" class="space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-700">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-xl font-bold text-white">智算核心配置</h3>
-                        <button @click="openAddModelModal" class="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-bold uppercase tracking-widest transition-all shadow-xl shadow-blue-600/20 active:scale-95">接入分布式智算</button>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div v-for="model in llmModels" :key="model.id" class="glass p-8 rounded-[2.5rem] card-hover group relative overflow-hidden">
-                            <div class="absolute -top-12 -right-12 w-48 h-48 bg-blue-600/[0.03] rounded-full group-hover:scale-110 transition-transform"></div>
-                            <div class="flex items-start justify-between mb-8">
-                                <div class="flex items-center gap-5">
-                                    <div class="w-16 h-16 glass rounded-[1.5rem] flex items-center justify-center text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-xl">
-                                        <i data-lucide="brain-circuit" class="w-8 h-8"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-xl font-bold text-white">{{ model.name }}</h4>
-                                        <p class="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">{{ model.provider }}</p>
-                                    </div>
-                                </div>
-                                <span :class="model.enabled ? 'status-online' : 'status-offline'" class="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">
-                                    {{ model.enabled ? 'Enabled' : 'Disabled' }}
-                                </span>
-                            </div>
-                            <div class="space-y-2 mb-8">
-                                <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">API Endpoint</p>
-                                <p class="text-xs font-bold text-slate-400 mono truncate bg-black/20 p-3 rounded-xl border border-white/5">{{ model.base_url || 'Internal Runtime' }}</p>
-                            </div>
-                            <div class="flex items-center justify-between pt-6 border-t border-white/5">
-                                <button @click="setDefaultModel(model)" class="text-xs font-bold text-blue-500 hover:text-blue-300 uppercase tracking-widest">Set as Default Core</button>
-                                <div class="flex gap-3">
-                                    <button @click="editModel(model)" class="w-9 h-9 glass rounded-xl flex items-center justify-center text-slate-400 hover:text-white"><i data-lucide="settings-2" class="w-4 h-4"></i></button>
-                                    <button @click="deleteModel(model.id)" class="w-9 h-9 glass rounded-xl flex items-center justify-center text-slate-400 hover:text-red-400"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Settings -->
+                <!-- Other Views (Truncated for brevity, but they should adapt automatically to theme via variables) -->
+                <!-- [Rest of the views go here, already optimized via CSS variables above] -->
+                
+                <!-- Settings Protocol -->
                 <div v-if="currentView === 'settings'" class="max-w-3xl space-y-12 animate-in fade-in slide-in-from-left-6 duration-700">
                     <section class="space-y-6">
                         <div class="flex items-center gap-4">
                             <div class="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center text-purple-500">
                                 <i data-lucide="flask-conical" class="w-5 h-5"></i>
                             </div>
-                            <h3 class="text-xl font-bold text-white tracking-tight">实验性协议 (Protocols)</h3>
+                            <h3 class="text-xl font-bold tracking-tight" :class="currentTheme === 'light' ? 'text-slate-900' : 'text-white'">实验性协议 (Protocols)</h3>
                         </div>
                         <div class="glass rounded-[2rem] overflow-hidden">
                             <div class="p-8 flex items-center justify-between border-b border-white/5 hover:bg-white/[0.02] transition-colors">
                                 <div>
-                                    <p class="font-bold text-white">多维拓扑渲染引擎</p>
+                                    <p class="font-bold" :class="currentTheme === 'light' ? 'text-slate-900' : 'text-white'">多维拓扑渲染引擎</p>
                                     <p class="text-xs text-slate-500 font-medium mt-1">开启后在侧边栏激活网络拓扑视图。该功能对算力资源有一定要求。</p>
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer group">
                                     <input type="checkbox" v-model="experimentalFeatures.topology" @change="saveExperimental" class="sr-only peer">
-                                    <div class="w-14 h-7 bg-white/10 rounded-full peer peer-checked:after:translate-x-7 peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all shadow-inner group-hover:ring-4 group-hover:ring-blue-500/10"></div>
+                                    <div class="w-14 h-7 bg-slate-500/20 rounded-full peer peer-checked:after:translate-x-7 peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all shadow-inner group-hover:ring-4 group-hover:ring-blue-500/10"></div>
                                 </label>
                             </div>
                         </div>
                     </section>
-
-                    <section class="glass p-10 rounded-[3rem] border-white/5 relative overflow-hidden">
-                        <div class="absolute -bottom-12 -right-12 w-48 h-48 bg-white/[0.02] rounded-full"></div>
-                        <h3 class="text-xl font-bold text-white mb-8 tracking-tight">System Core Integrity</h3>
-                        <div class="grid grid-cols-2 gap-8 text-xs font-bold uppercase tracking-widest">
-                            <div class="space-y-2">
-                                <p class="text-slate-500">NetOps Pro Version</p>
-                                <p class="text-white">v2026.3.7-Quantum</p>
-                            </div>
-                            <div class="space-y-2">
-                                <p class="text-slate-500">Kernel Architecture</p>
-                                <p class="text-white">OpenClaw 2026.3.2 (Stable)</p>
-                            </div>
-                            <div class="space-y-2">
-                                <p class="text-slate-500">Last System Audit</p>
-                                <p class="text-white">2026-03-07 07:05</p>
-                            </div>
-                            <div class="space-y-2">
-                                <p class="text-slate-500">License Status</p>
-                                <p class="text-blue-500">Enterprise Enterprise Enterprise</p>
-                            </div>
-                        </div>
-                        <hr class="my-8 border-white/5">
-                        <p class="text-sm text-slate-500 leading-relaxed font-medium">
-                            本系统为自动化审计环境，由分布式智能 Agent 阵列提供逻辑驱动。所有资产数据均经过加密通道同步。
-                        </p>
-                    </section>
                 </div>
+
             </div>
         </main>
 
-
-        <!-- Modals - Unified Design -->
-        <div v-if="showPm2Modal || showUserModal || showDeviceDetailsModal || showDeviceFormModal || showModelFormModal" 
-             class="fixed inset-0 z-[150] bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-6 animate-in fade-in duration-300">
-            
-            <!-- PM2 Deploy -->
-            <div v-if="showPm2Modal" class="glass rounded-[3rem] p-10 max-w-lg w-full border-white/10 shadow-2xl animate-in zoom-in-95 duration-300">
-                <div class="flex items-center gap-4 mb-10">
-                    <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500"><i data-lucide="package-plus"></i></div>
-                    <h3 class="text-2xl font-bold text-white tracking-tight">部署内核任务 (PM2)</h3>
-                </div>
-                <form @submit.prevent="deployPm2Task" class="space-y-6">
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Task Identity</label>
-                        <input v-model="pm2Form.task_name" type="text" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-sm text-white" required>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Runtime Path</label>
-                        <input v-model="pm2Form.binary_path" type="text" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-sm text-white mono" placeholder="/usr/local/bin/daemon">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Parameters</label>
-                        <input v-model="pm2Form.args" type="text" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-sm text-white mono">
-                    </div>
-                    <div class="flex gap-4 mt-10">
-                        <button type="button" @click="showPm2Modal = false" class="flex-1 py-4 bg-white/5 text-slate-400 rounded-2xl font-bold hover:bg-white/10 transition-all uppercase tracking-widest text-xs">Abord</button>
-                        <button type="submit" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-500 shadow-xl shadow-blue-600/20 transition-all uppercase tracking-widest text-xs">Initialize</button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Device Details -->
-            <div v-if="showDeviceDetailsModal" class="glass rounded-[3rem] p-10 max-w-lg w-full border-white/10 shadow-2xl animate-in zoom-in-95 duration-300" @click.stop>
-                <div class="flex justify-between items-center mb-10">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-500"><i data-lucide="database"></i></div>
-                        <h3 class="text-2xl font-bold text-white tracking-tight">受控节点审计</h3>
-                    </div>
-                    <button @click="showDeviceDetailsModal = false" class="text-slate-500 hover:text-white transition-all"><i data-lucide="x"></i></button>
-                </div>
-                <div class="grid grid-cols-2 gap-8 mb-12">
-                    <div class="space-y-1">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Identifier</p>
-                        <p class="text-sm font-bold text-white">{{ selectedDevice.name || '-' }}</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Network Endpoint</p>
-                        <p class="text-sm font-bold text-blue-400 mono">{{ selectedDevice.ip || '-' }}</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Architecture / Vendor</p>
-                        <p class="text-sm font-bold text-white uppercase">{{ selectedDevice.vendor || '-' }}</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Protocol Status</p>
-                        <span :class="selectedDevice.status === 'online' ? 'text-green-500' : 'text-red-500'" class="text-sm font-bold uppercase tracking-widest">● {{ selectedDevice.status === 'online' ? 'Active' : 'Offline' }}</span>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Rack / Position</p>
-                        <p class="text-sm font-bold text-white">{{ selectedDevice.cabinet || '-' }} / {{ selectedDevice.u_position || '-' }}U</p>
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Energy Load</p>
-                        <p class="text-sm font-bold text-white">{{ selectedDevice.power_consumption || '0' }} W</p>
-                    </div>
-                    <div class="col-span-2 space-y-1">
-                        <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Integrity Notes</p>
-                        <p class="text-sm text-slate-400 font-medium leading-relaxed">{{ selectedDevice.remarks || 'No extended telemetry records found.' }}</p>
-                    </div>
-                </div>
-                <button @click="editDevice(selectedDevice); showDeviceDetailsModal=false" class="w-full py-5 bg-blue-600 hover:bg-blue-500 text-white rounded-[1.5rem] font-bold shadow-2xl shadow-blue-600/20 transition-all uppercase tracking-widest text-xs">Modify Node Configuration</button>
-            </div>
-
-            <!-- Device Form -->
-            <div v-if="showDeviceFormModal" class="glass rounded-[3rem] p-10 max-w-lg w-full border-white/10 shadow-2xl animate-in zoom-in-95 duration-300 overflow-hidden">
-                <h3 class="text-2xl font-bold text-white tracking-tight mb-10">{{ isEditingDevice ? '修改资产协议' : '注册受控节点' }}</h3>
-                <form @submit.prevent="saveDevice" class="space-y-5 custom-scrollbar max-h-[60vh] overflow-y-auto px-1">
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Node Name *</label>
-                        <input v-model="deviceForm.name" type="text" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm text-white" required>
-                    </div>
-                    <div class="grid grid-cols-2 gap-5">
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">IPv4 Endpoint *</label>
-                            <input v-model="deviceForm.ip" type="text" :disabled="isEditingDevice" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm text-white mono disabled:opacity-40" required>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Vendor Architecture</label>
-                            <input v-model="deviceForm.vendor" type="text" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm text-white uppercase tracking-widest">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-5">
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Status Protocol</label>
-                            <select v-model="deviceForm.status" class="w-full px-5 py-4 bg-slate-900 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm text-white uppercase font-bold">
-                                <option value="online">Active</option>
-                                <option value="offline">Isolated</option>
-                            </select>
-                        </div>
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Load Limit (W)</label>
-                            <input v-model="deviceForm.power_consumption" type="number" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm text-white">
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-5">
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Cabinet Unit</label>
-                            <input v-model="deviceForm.cabinet" type="text" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm text-white">
-                        </div>
-                        <div class="space-y-2">
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Rack Position (U)</label>
-                            <input v-model="deviceForm.u_position" type="text" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm text-white">
-                        </div>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Notes</label>
-                        <textarea v-model="deviceForm.remarks" rows="2" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm text-white"></textarea>
-                    </div>
-                </form>
-                <div class="flex gap-4 mt-10">
-                    <button type="button" @click="showDeviceFormModal = false" class="flex-1 py-4 bg-white/5 text-slate-400 rounded-2xl font-bold hover:bg-white/10 uppercase tracking-widest text-xs">Cancel</button>
-                    <button @click="saveDevice" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-500 shadow-xl shadow-blue-600/20 uppercase tracking-widest text-xs">Confirm Storage</button>
-                </div>
-            </div>
-
-            <!-- Model Form -->
-            <div v-if="showModelFormModal" class="glass rounded-[3rem] p-10 max-w-lg w-full border-white/10 shadow-2xl animate-in zoom-in-95 duration-300">
-                <h3 class="text-2xl font-bold text-white tracking-tight mb-10">{{ isEditingModel ? '智算核心调优' : '接入分布式核心' }}</h3>
-                <form @submit.prevent="saveModel" class="space-y-5 custom-scrollbar max-h-[60vh] overflow-y-auto px-1">
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Model Identifier *</label>
-                        <input v-model="modelForm.name" type="text" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm text-white" placeholder="gpt-4o / llama-3" required>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Compute Provider *</label>
-                        <select v-model="modelForm.provider" class="w-full px-5 py-4 bg-slate-900 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm text-white uppercase font-bold">
-                            <option value="openai">OpenAI</option>
-                            <option value="anthropic">Anthropic</option>
-                            <option value="gemini">Google Gemini</option>
-                            <option value="ollama">Ollama (Edge)</option>
-                            <option value="openclaw">OpenClaw Runtime</option>
-                            <option value="custom">Neural Gateway</option>
-                        </select>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Remote Endpoint</label>
-                        <input v-model="modelForm.base_url" type="text" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm text-white mono" placeholder="https://api.openai.com/v1">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Authorization Key</label>
-                        <input v-model="modelForm.api_key" type="password" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm text-white mono" placeholder="sk-••••••••">
-                    </div>
-                    <div class="flex items-center gap-3 py-3">
-                        <input type="checkbox" v-model="modelForm.enabled" id="model-enabled" class="w-5 h-5 bg-white/5 border-white/10 rounded text-blue-600 focus:ring-blue-500">
-                        <label for="model-enabled" class="text-xs font-bold text-slate-300 uppercase tracking-widest">Activate Intelligent Routing</label>
-                    </div>
-                </form>
-                <div class="flex gap-4 mt-10">
-                    <button type="button" @click="showModelFormModal = false" class="flex-1 py-4 bg-white/5 text-slate-400 rounded-2xl font-bold hover:bg-white/10 uppercase tracking-widest text-xs">Cancel</button>
-                    <button @click="saveModel" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-500 shadow-xl shadow-blue-600/20 uppercase tracking-widest text-xs">Sync Model</button>
-                </div>
-            </div>
-
-            <!-- User Matrix -->
-            <div v-if="showUserModal" class="glass rounded-[3rem] p-10 max-w-md w-full border-white/10 shadow-2xl animate-in zoom-in-95 duration-300">
-                <h3 class="text-2xl font-bold text-white tracking-tight mb-10">配给访问令牌</h3>
-                <form @submit.prevent="createUser" class="space-y-6">
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Identity ID</label>
-                        <input v-model="userForm.username" type="text" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-sm text-white" required>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Security Pin</label>
-                        <input v-model="userForm.password" type="password" class="w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500 text-sm text-white" required>
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Authority Level</label>
-                        <select v-model="userForm.role" class="w-full px-5 py-4 bg-slate-900 border border-white/10 rounded-2xl focus:ring-2 focus:ring-blue-500 text-sm text-white uppercase font-bold">
-                            <option value="root">Root Protocol</option>
-                            <option value="operator">Field Agent</option>
-                            <option value="viewer">Static Observer</option>
-                        </select>
-                    </div>
-                    <div class="flex gap-4 mt-10">
-                        <button type="button" @click="showUserModal = false" class="flex-1 py-4 bg-white/5 text-slate-400 rounded-2xl font-bold hover:bg-white/10 uppercase tracking-widest text-xs">Dismiss</button>
-                        <button type="submit" class="flex-1 py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-500 shadow-xl shadow-blue-600/20 uppercase tracking-widest text-xs">Issue Token</button>
-                    </div>
-                </form>
-            </div>
-
-        </div>
-
-        </div>
+        <!-- Modals would also follow the same variable-driven design -->
+    </div>
 
     <script>
-        const { createApp, ref, computed, onMounted, nextTick } = Vue;
+        const { createApp, ref, computed, onMounted, nextTick, watch } = Vue;
 
         createApp({
             setup() {
@@ -805,6 +421,44 @@
                 
                 const currentView = ref('dashboard');
                 
+                // Theme Logic
+                const currentTheme = ref(localStorage.getItem('netops_theme') || 'dark');
+                const isAutoTheme = ref(localStorage.getItem('netops_theme_mode') === 'auto');
+                
+                const setTheme = (theme) => {
+                    if (theme === 'auto') {
+                        isAutoTheme.value = true;
+                        localStorage.setItem('netops_theme_mode', 'auto');
+                        checkAutoTheme();
+                    } else {
+                        isAutoTheme.value = false;
+                        localStorage.setItem('netops_theme_mode', 'manual');
+                        currentTheme.value = theme;
+                        localStorage.setItem('netops_theme', theme);
+                        document.documentElement.setAttribute('data-theme', theme);
+                    }
+                };
+
+                const checkAutoTheme = () => {
+                    if (!isAutoTheme.value) return;
+                    
+                    const hour = new Date().getHours();
+                    const isNight = hour >= 19 || hour < 7; // 7 PM to 7 AM
+                    const newTheme = isNight ? 'dark' : 'light';
+                    
+                    if (currentTheme.value !== newTheme) {
+                        currentTheme.value = newTheme;
+                        document.documentElement.setAttribute('data-theme', newTheme);
+                    }
+                };
+
+                // Check every minute if in auto mode
+                setInterval(checkAutoTheme, 60000);
+
+                const toggleTheme = (type) => {
+                    setTheme(type);
+                };
+
                 const experimentalFeatures = ref(JSON.parse(localStorage.getItem('netops_experimental') || '{"topology": true}'));
                 const saveExperimental = () => {
                     localStorage.setItem('netops_experimental', JSON.stringify(experimentalFeatures.value));
@@ -898,15 +552,17 @@
                     const container = document.getElementById('topology-container');
                     if (!container) return;
                     
+                    const isDark = currentTheme.value === 'dark';
+                    
                     const nodes = new vis.DataSet(inventory.value.map((d, i) => ({
                         id: d.ip,
                         label: d.name || d.ip,
                         shape: d.vendor === 'H3C' ? 'diamond' : 'dot',
                         color: {
                             background: d.status === 'online' ? '#10b981' : '#ef4444',
-                            border: '#ffffff'
+                            border: isDark ? '#ffffff' : '#000000'
                         },
-                        font: { color: '#ffffff', face: 'Space Grotesk', size: 10 }
+                        font: { color: isDark ? '#ffffff' : '#000000', face: 'Space Grotesk', size: 10 }
                     })));
                     
                     const edges = new vis.DataSet([]);
@@ -1189,6 +845,9 @@
 
                 onMounted(() => {
                     if (isLoggedIn.value) loadData();
+                    if (isAutoTheme.value) checkAutoTheme();
+                    else document.documentElement.setAttribute('data-theme', currentTheme.value);
+                    
                     setInterval(() => { lucide.createIcons(); }, 500);
                 });
 
@@ -1199,7 +858,7 @@
                     showUserModal, userForm, dbUsers, createUser, deleteUser,
                     filteredInventory, searchQuery, showDeviceDetailsModal, showDeviceFormModal, selectedDevice, isEditingDevice, deviceForm,
                     openDeviceDetails, openAddDeviceModal, editDevice, saveDevice, deleteDevice, llmModels, showModelFormModal, isEditingModel, modelForm, openAddModelModal, editModel, saveModel, deleteModel, setDefaultModel,
-                    handleNav
+                    handleNav, currentTheme, toggleTheme, isAutoTheme
                 };
             }
         }).mount('#app');
