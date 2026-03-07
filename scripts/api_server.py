@@ -560,15 +560,19 @@ async def stop_pm2_task(task_name: str):
 async def get_system_info():
     """Get kernel and system version info"""
     try:
-        # User requested specific strings but also auto-fetching. 
-        # I'll fetch kernel dynamically but keep other strings as requested.
+        # Use openclaw --version if possible, or fallback to fixed version
+        try:
+            openclaw_version = subprocess.check_output(["openclaw", "--version"]).decode().strip()
+        except:
+            openclaw_version = "v2026.3.7-Quantum"
+            
         kernel = subprocess.check_output(["uname", "-srv"]).decode().strip()
         
         return {
-            "version": "v2026.3.7-Quantum",
+            "version": openclaw_version,
             "kernel": kernel,
             "last_audit": "2026-03-07 18:35",
-            "status": "Enterprise Certified"
+            "status": "已获企业级认证"
         }
     except Exception as e:
         return {"status": "error", "message": str(e)}
