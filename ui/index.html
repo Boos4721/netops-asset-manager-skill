@@ -422,8 +422,8 @@
                 const currentView = ref('dashboard');
                 
                 // Theme Logic
-                const currentTheme = ref(localStorage.getItem('netops_theme') || 'dark');
-                const isAutoTheme = ref(localStorage.getItem('netops_theme_mode') === 'auto');
+                const currentTheme = ref(localStorage.getItem('netops_theme') || 'light');
+                const isAutoTheme = ref(localStorage.getItem('netops_theme_mode') !== 'manual');
                 
                 const setTheme = (theme) => {
                     if (theme === 'auto') {
