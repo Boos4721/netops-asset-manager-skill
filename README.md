@@ -21,7 +21,7 @@ Automated IT infrastructure inventory and maintenance skill for OpenClaw. This s
 - **GPU Maintenance**: Support for **NVIDIA** and **AMD** driver installation (official CN/HK sources) and health monitoring.
 - **Network Performance**: Integrated tools for **Speedtest**, **Route Tracing (MTR)**, and **Subnet Scanning (Nmap)**.
 - **Real-time Health Check**: High-performance asynchronous parallel Ping detection for instant device status updates.
-- **Web Dashboard**: Modern SPA (Vue 3 + Tailwind) with AI Assistant (OpenClaw powered), Markdown support, LLM API Model Management, Topology Visualization, and PM2 Task Management.
+- **Web Dashboard**: Modern SPA (Vue 3 + Tailwind) with Pro Dark Aesthetic, AI Assistant (OpenClaw powered), Markdown support, LLM API Model Management, Topology Visualization, and PM2 Task Management.
 - **Safety First**: **Human-in-the-loop** confirmation required for all core network configuration changes.
 - **On-Premise Deployment**: Secure management within internal networks via one-click environment setup.
 

@@ -5,7 +5,7 @@
 ## 1. 架构概述
 
 Dashboard 采用前后端分离的架构：
-*   **前端 (UI)**：基于 **Vue 3**（组合式 API）构建的单页应用（SPA），使用 **Tailwind CSS** 进行样式设计，图标采用 **Lucide**，拓扑图使用 **Vis.js** 渲染。界面具有“毛玻璃”质感和流畅的动画过渡。
+*   **前端 (UI)**：基于 **Vue 3**（组合式 API）构建的单页应用（SPA），使用 **Tailwind CSS** 进行样式设计，图标采用 **Lucide**，拓扑图使用 **Vis.js** 渲染。界面具有“Pro Dark”专业暗黑美学，集成毛玻璃 (Glassmorphism) 质感、动态渐变背景与流畅的动画过渡。
 *   **后端 (API)**：基于 **FastAPI** 与 **Uvicorn** 构建的现代化异步 API (`scripts/api_server.py`)，负责处理前端请求并与系统底层交互。
 *   **数据库**：使用 **PostgreSQL** (`netops` 数据库) 进行用户权限管理（RBAC）。
 *   **进程管理**：集成 **PM2** 进行后台脚本/任务的管理与监控。
