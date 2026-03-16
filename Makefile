@@ -31,6 +31,10 @@ dev-frontend:
 dev-backend:
 	@command -v air >/dev/null 2>&1 && air || go run $(SERVER)
 
+## Run backend from source without compiling (no frontend embed, use with dev-frontend)
+run:
+	go run $(SERVER)
+
 ## Tidy Go modules
 tidy:
 	go mod tidy

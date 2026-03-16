@@ -66,18 +66,22 @@ netops-asset-manager-skill/
 # 1. Create database
 createdb netops
 
-# 2. Configure
-cp config.yaml config.local.yaml
-# Edit DATABASE_URL and JWT_SECRET
+# 2. Configure (edit DATABASE_URL and JWT_SECRET)
+# config.yaml is pre-configured for local PostgreSQL
 
-# 3. Build & run
+# 3a. Run from source (no compilation needed)
+cd frontend && npm install --legacy-peer-deps && cd ..
+make run           # Terminal 1: Go backend on :8081
+make dev-frontend  # Terminal 2: Vite on :5173 → http://localhost:5173
+
+# 3b. Build single binary (production)
 make build
-./netops
-# → http://localhost:8081  (default: admin / admin)
+./netops           # → http://localhost:8081  (default: admin / admin)
 
-# Development mode (two terminals)
-make dev-backend    # Go server on :8081
-make dev-frontend   # Vite dev server on :5173 (proxies /api → :8081)
+# Development mode with hot reload
+make install-tools  # Install air (once)
+make dev-backend    # Go hot-reload on :8081
+make dev-frontend   # Vite dev server on :5173
 ```
 
 ### License
@@ -119,18 +123,22 @@ This project is licensed under **CC BY-NC 4.0**. Commercial use is prohibited.
 # 1. 创建数据库
 createdb netops
 
-# 2. 配置
-cp config.yaml config.local.yaml
-# 编辑 DATABASE_URL 和 JWT_SECRET
+# 2. 配置（编辑 DATABASE_URL 和 JWT_SECRET）
+# config.yaml 已预配置本地 PostgreSQL 默认值
 
-# 3. 构建并运行
+# 3a. 源码直接运行（无需编译）
+cd frontend && npm install --legacy-peer-deps && cd ..
+make run           # 终端 1：Go 后端 :8081
+make dev-frontend  # 终端 2：Vite :5173 → 访问 http://localhost:5173
+
+# 3b. 编译单二进制（生产部署）
 make build
-./netops
-# → http://localhost:8081（默认账号：admin / admin）
+./netops           # → http://localhost:8081（默认账号：admin / admin）
 
-# 开发模式（两个终端）
-make dev-backend    # Go 服务 :8081
-make dev-frontend   # Vite 开发服务器 :5173（自动代理 /api → :8081）
+# 开发模式（热重载）
+make install-tools  # 安装 air（仅需一次）
+make dev-backend    # Go 热重载 :8081
+make dev-frontend   # Vite 开发服务器 :5173
 ```
 
 ### 开源协议

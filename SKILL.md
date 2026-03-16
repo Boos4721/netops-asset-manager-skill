@@ -72,6 +72,13 @@ frontend/                         # Vue 3.4 + Vite 5 + TailwindCSS
 ```bash
 # Prerequisites: Go 1.26+, Node.js 22+, PostgreSQL 15+
 createdb netops
+
+# Option A: Run from source (no compilation)
+cd frontend && npm install --legacy-peer-deps && cd ..
+make run           # Terminal 1: backend on :8081
+make dev-frontend  # Terminal 2: frontend on :5173
+
+# Option B: Build single binary
 make build
 ./netops    # → http://localhost:8081 (admin / admin)
 ```

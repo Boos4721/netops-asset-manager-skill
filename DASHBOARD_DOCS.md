@@ -102,10 +102,13 @@ frontend/                     # Vue 3 前端
 # 创建数据库
 createdb netops
 
-# 构建单二进制（前端 + 后端）
-make build
+# 方式 A：源码直接运行（无需编译，适合快速启动）
+cd frontend && npm install --legacy-peer-deps && cd ..
+make run           # 终端 1：Go 后端 :8081
+make dev-frontend  # 终端 2：Vite :5173 → 访问 http://localhost:5173
 
-# 运行
+# 方式 B：构建单二进制（生产部署）
+make build
 ./netops
 # → http://localhost:8081
 # → 默认账号：admin / admin
@@ -114,11 +117,17 @@ make build
 ### 开发模式
 
 ```bash
-# 终端 1：后端（端口 8081）
+# 安装热重载工具（仅需一次）
+make install-tools
+
+# 终端 1：后端热重载（端口 8081）
 make dev-backend
 
 # 终端 2：前端（端口 5173，自动代理 /api → 8081）
 make dev-frontend
+
+# 也可直接源码运行（不需要 air）
+make run
 ```
 
 ### Docker 部署
