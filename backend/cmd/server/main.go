@@ -44,7 +44,7 @@ func main() {
 
 	r := router.Setup(db, cfg, distFS)
 
-	addr := fmt.Sprintf(":%d", cfg.Port)
+	addr := fmt.Sprintf("0.0.0.0:%d", cfg.Port)
 	log.Printf("NetOps server listening on %s", addr)
 	if err := r.Run(addr); err != nil {
 		log.Fatalf("server error: %v", err)

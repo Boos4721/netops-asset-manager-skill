@@ -13,6 +13,7 @@ import (
 
 func Setup(db *ent.Client, cfg *config.Config, distFS fs.FS) *gin.Engine {
 	r := gin.Default()
+	r.SetTrustedProxies(nil)
 
 	// CORS
 	r.Use(cors.New(cors.Config{
