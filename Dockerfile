@@ -11,6 +11,8 @@ FROM golang:1.26-alpine AS backend
 WORKDIR /app
 RUN apk add --no-cache gcc musl-dev
 
+RUN go env -w GOPROXY=https://goproxy.cn,direct
+
 COPY go.mod go.sum ./
 RUN go mod download
 
@@ -22,18 +24,22 @@ RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /netops ./backend/cmd/
 
 # ─── Stage 3: Minimal runtime image ────────────────────────────────────────
 FROM alpine:3.20
-RUN apk add --no-cache ca-certificates tzdata nmap openssh-client
+RUN apk add --no-cache ca-certificates tzdata nmap openssh-client postgresql postgresql-client su-exec
 
 WORKDIR /app
 COPY --from=backend /netops ./netops
 COPY config.yaml ./
+COPY entrypoint.sh ./
 
-RUN mkdir -p /app/assets
+RUN mkdir -p /app/assets /run/postgresql /var/lib/postgresql/data && \
+    chown -R postgres:postgres /run/postgresql /var/lib/postgresql/data && \
+    chmod +x /app/entrypoint.sh
 
 EXPOSE 8081
 
 ENV PORT=8081
-ENV DATABASE_URL=""
+ENV DATABASE_URL="postgres://netops:netops_password@127.0.0.1:5432/netops?sslmode=disable"
 ENV JWT_SECRET="change-me"
+ENV PGDATA="/var/lib/postgresql/data"
 
-ENTRYPOINT ["/app/netops"]
+ENTRYPOINT ["/app/entrypoint.sh"]
