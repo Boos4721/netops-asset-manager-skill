@@ -87,7 +87,6 @@ make build
 ```bash
 make docker-build
 docker run -p 8081:8081 \
-  -e DATABASE_URL="postgres://..." \
   -e JWT_SECRET="secret" \
   netops-asset-manager:latest
 ```

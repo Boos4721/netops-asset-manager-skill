@@ -55,7 +55,6 @@ docker-build: build
 ## Docker run
 docker-run:
 	docker run -p 8081:8081 \
-		-e DATABASE_URL="$$DATABASE_URL" \
 		-e JWT_SECRET="$$JWT_SECRET" \
 		netops-asset-manager:latest
 

@@ -1,6 +1,10 @@
 #!/bin/sh
 set -e
 
+# Clean up stale pid/socket files from previous run
+rm -f "$PGDATA/postmaster.pid"
+rm -f /run/postgresql/.s.PGSQL.5432*
+
 # Initialize database if it doesn't exist
 if [ ! -s "$PGDATA/PG_VERSION" ]; then
     echo "Initializing PostgreSQL database..."

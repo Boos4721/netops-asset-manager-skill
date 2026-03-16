@@ -135,10 +135,9 @@ make dev-frontend
 # 构建镜像
 make docker-build
 
-# 运行（指定数据库和密钥）
+# 运行（镜像已内置 PostgreSQL 数据库，开箱即用）
 docker run -d --name netops \
   -p 8081:8081 \
-  -e DATABASE_URL="postgres://postgres:password@host.docker.internal:5432/netops?sslmode=disable" \
   -e JWT_SECRET="your-strong-secret" \
   netops-asset-manager:latest
 ```
