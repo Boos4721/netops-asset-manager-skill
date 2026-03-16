@@ -56,6 +56,7 @@ docker-build: build
 docker-run:
 	docker run -p 8081:8081 \
 		-e JWT_SECRET="$$JWT_SECRET" \
+		-v ~/.openclaw:/root/.openclaw \
 		netops-asset-manager:latest
 
 ## Install Go tooling

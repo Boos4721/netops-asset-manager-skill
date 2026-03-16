@@ -88,6 +88,7 @@ make build
 make docker-build
 docker run -p 8081:8081 \
   -e JWT_SECRET="secret" \
+  -v ~/.openclaw:/root/.openclaw \
   netops-asset-manager:latest
 ```
 

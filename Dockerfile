@@ -23,8 +23,13 @@ COPY --from=frontend /app/backend/internal/embedded/dist ./backend/internal/embe
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o /netops ./backend/cmd/server
 
 # ─── Stage 3: Minimal runtime image ────────────────────────────────────────
-FROM alpine:3.20
-RUN apk add --no-cache ca-certificates tzdata nmap openssh-client postgresql postgresql-client su-exec
+FROM alpine:3.21
+RUN apk add --no-cache ca-certificates tzdata nmap openssh-client postgresql postgresql-client su-exec nodejs npm bash && \
+    apk add --no-cache --virtual .build-deps git curl python3 build-base && \
+    npm config set registry https://registry.npmmirror.com && \
+    npm install -g openclaw@latest && \
+    apk del .build-deps && \
+    rm -rf /root/.npm
 
 WORKDIR /app
 COPY --from=backend /netops ./netops

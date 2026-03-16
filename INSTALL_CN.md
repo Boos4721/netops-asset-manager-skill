@@ -136,9 +136,11 @@ make dev-frontend
 make docker-build
 
 # 运行（镜像已内置 PostgreSQL 数据库，开箱即用）
+# 挂载 ~/.openclaw 目录以共享宿主机的 AI 模型配置和会话历史
 docker run -d --name netops \
   -p 8081:8081 \
   -e JWT_SECRET="your-strong-secret" \
+  -v ~/.openclaw:/root/.openclaw \
   netops-asset-manager:latest
 ```
 

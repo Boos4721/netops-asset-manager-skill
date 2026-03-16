@@ -40,5 +40,10 @@ done
 echo "PostgreSQL is ready."
 
 # Start the go application
-echo "Starting netops application..."
-exec /app/netops
+if [ "$#" -gt 0 ]; then
+    echo "Executing command: $@"
+    exec "$@"
+else
+    echo "Starting netops application..."
+    exec /app/netops
+fi
