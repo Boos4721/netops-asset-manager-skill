@@ -1,0 +1,1 @@
+import{n as e,t}from"./auth-Hk7K59b1.js";import{t as n}from"./index-_ACegoE5.js";var r=e.create({baseURL:`/api`,timeout:3e4});r.interceptors.request.use(e=>{let n=t();return n.token&&(e.headers.Authorization=`Bearer ${n.token}`),e}),r.interceptors.response.use(e=>e,e=>(e.response?.status===401&&(t().logout(),n.push(`/login`)),Promise.reject(e)));export{r as t};

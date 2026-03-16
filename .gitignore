@@ -1,5 +1,18 @@
 # Ignore dynamic assets and data
-assets/
 __pycache__/
 *.pyc
 .env
+
+# Go build output
+netops
+netops-linux
+*.exe
+
+# Frontend build
+web/node_modules/
+
+# macOS
+.DS_Store
+
+# config with secrets
+config.local.yaml

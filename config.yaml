@@ -1,0 +1,7 @@
+PORT: 8081
+DATABASE_URL: "postgres://postgres:postgres@127.0.0.1:5432/netops?sslmode=disable"
+JWT_SECRET: "netops-change-me-in-production"
+JWT_EXPIRY: "24h"
+PROBE_INTERVAL: "5m"
+OPENCLAW_CONFIG_PATH: "~/.openclaw/openclaw.json"
+SSH_CONNECT_TIMEOUT: "10s"
