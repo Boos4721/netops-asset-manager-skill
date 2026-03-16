@@ -1,109 +1,132 @@
-# NetOps Skill - System Dependencies / 系统依赖指南
+# NetOps Asset Manager — System Dependencies
 
-To ensure all scripts function correctly, the following system packages are required. / 为确保所有脚本正常运行，需安装以下系统软件包。
+Runtime and build dependencies for the **Go + Vue 3** stack. No Python required.
 
 ---
 
-## 📦 OS-Specific Installation / 各发行版安装命令
+## Required Components
+
+| Component | Version | Purpose |
+|---|---|---|
+| **Go** | 1.26+ | Backend build & run |
+| **Node.js** | 22+ | Frontend build (`make build`) |
+| **PostgreSQL** | 15+ | Data storage |
+| **nmap** | any | Subnet device discovery (`POST /api/discover`) |
+| **PM2** | any | Process management feature |
+| **openssh-client** | any | SSH operations (or use Go native SSH — built-in) |
+
+---
+
+## OS-Specific Installation
+
+### macOS
+```bash
+brew install go node postgresql nmap
+brew services start postgresql
+```
 
 ### Debian / Ubuntu / Proxmox
 ```bash
-sudo apt update
-sudo apt install -y \
-    python3-pip \
-    python3-venv \
-    python3-dev \
-    gcc \
-    libpq-dev \
-    ipmitool \
-    mtr-tiny \
-    traceroute \
-    snmp \
-    snmp-mibs-downloader \
-    smartmontools \
-    lm-sensors \
-    ethtool \
-    nmap \
-    iproute2 \
-    openssl \
-    curl \
-    npm
+# Go (official installer — apt version is usually outdated)
+wget https://go.dev/dl/go1.26.1.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.26.1.linux-amd64.tar.gz
+echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.bashrc
+source ~/.bashrc
+
+# Node.js 22
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# PostgreSQL
+sudo apt install -y postgresql postgresql-contrib
+sudo systemctl enable --now postgresql
+
+# Optional tools
+sudo apt install -y nmap openssh-client
+sudo npm install -g pm2
 ```
 
 ### RedHat / CentOS / Rocky / Alma
 ```bash
-sudo dnf install -y \
-    python3-pip \
-    python3-devel \
-    gcc \
-    postgresql-devel \
-    ipmitool \
-    mtr \
-    traceroute \
-    net-snmp-utils \
-    smartmontools \
-    lm_sensors \
-    ethtool \
-    nmap \
-    iproute \
-    openssl \
-    curl \
-    npm
+# Go (same official installer as above)
+
+# Node.js 22
+curl -fsSL https://rpm.nodesource.com/setup_22.x | sudo bash -
+sudo dnf install -y nodejs
+
+# PostgreSQL
+sudo dnf install -y postgresql-server postgresql-contrib
+sudo postgresql-setup --initdb
+sudo systemctl enable --now postgresql
+
+# Optional tools
+sudo dnf install -y nmap openssh
+sudo npm install -g pm2
 ```
 
 ### Alpine Linux
 ```bash
-sudo apk add \
-    py3-pip \
-    python3-dev \
-    gcc \
-    musl-dev \
-    postgresql-dev \
-    ipmitool \
-    mtr \
-    traceroute \
-    net-snmp-tools \
-    smartmontools \
-    lm-sensors \
-    ethtool \
-    nmap \
-    iproute2 \
-    openssl \
-    curl \
-    nodejs \
-    npm
+apk add go nodejs npm postgresql postgresql-contrib nmap openssh
+rc-service postgresql start
+npm install -g pm2
 ```
 
 ---
 
-## 📦 PM2 Installation / PM2 安装
-
-After system packages are installed, install PM2 for process management:
+## China Region Mirror Acceleration
 
 ```bash
-# For China region, configure npm mirror first
-npm config set registry https://registry.npmmirror.com
+# Go module proxy
+go env -w GOPROXY=https://goproxy.cn,direct
 
-# Install PM2 globally
+# npm mirror
+npm config set registry https://registry.npmmirror.com
+```
+
+---
+
+## Database Setup
+
+```bash
+# Create database
+sudo -u postgres psql -c "CREATE DATABASE netops;"
+
+# Optional: set postgres user password
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'your_password';"
+```
+
+---
+
+## PM2 Setup (Process Management Feature)
+
+```bash
 sudo npm install -g pm2
 
-# Setup PM2 to start on boot
+# Auto-start on boot
 sudo pm2 startup
 pm2 save
 ```
 
-Or simply run the auto-setup script:
+---
+
+## OpenClaw (AI Assistant Feature)
+
+Install via the provided script (CN-optimized):
 ```bash
-chmod +x scripts/setup_env.sh
-./scripts/setup_env.sh
+bash install_openclaw_cn.sh
+```
+
+Or directly:
+```bash
+npm install -g openclaw
+openclaw init
 ```
 
 ---
 
-## 📝 Post-Installation Notes / 安装后注意事项
+## Post-Installation Notes
 
-1. **Netmiko**: Requires Python headers for some SSH optimizations (optional but recommended: `apt install python3-dev libssl-dev`). / **Netmiko**: 某些 SSH 优化可能需要 Python 头文件（可选建议：`apt install python3-dev libssl-dev`）。
-2. **Speedtest**: The `speedtest-cli` is included in `requirements.txt`. / **Speedtest**: 测速工具已包含在 `requirements.txt` 中。
-3. **Sensors**: Run `sudo sensors-detect` once to configure hardware monitoring. / **Sensors**: 首次安装后运行 `sudo sensors-detect` 以配置硬件监控传感器。
-4. **SNMP**: Ensure SNMP service is allowed in your network firewall. / **SNMP**: 确保您的网络防火墙已允许 SNMP 协议流量。
-5. **Nmap**: Used for the asset discovery feature. Ensure the user running the script has appropriate permissions. / **Nmap**: 用于资产发现功能，请确保运行脚本的用户拥有相应权限。
+1. **ICMP Ping permissions**: Health prober uses `ping -c 1`, which may require root or `cap_net_raw` on Linux. Run as root or: `sudo setcap cap_net_raw+ep $(which ping)`.
+2. **Nmap permissions**: Subnet scan (`-sn`) typically requires root for ARP-based detection on local subnets.
+3. **PostgreSQL authentication**: Default `config.yaml` assumes `trust` or `md5` auth for localhost. Adjust `pg_hba.conf` if needed.
+4. **PM2 global install**: Use `sudo npm install -g pm2` or ensure `~/.npm-global/bin` is in PATH.

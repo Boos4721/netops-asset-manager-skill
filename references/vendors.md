@@ -1,5 +1,19 @@
 # Network Vendor Command Patterns
 
+## Config Backup Commands (used by SSH backup service)
+
+| Vendor | Backup Command | Save Config |
+|---|---|---|
+| H3C | `display current-configuration` | `save force` |
+| Huawei | `display current-configuration` | `save` |
+| Cisco | `show running-config` | `write memory` |
+| MikroTik | `/export` | (auto-saved) |
+| Ruijie | `show running-config` | `write` |
+| DCN | `show running-config` | `write` |
+| Linux | `cat /etc/os-release && ip addr && df -h` | N/A |
+
+---
+
 ## H3C (Comware)
 - Enter view: `system-view`
 - View VLAN: `display vlan`
