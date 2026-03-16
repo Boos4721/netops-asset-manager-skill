@@ -1,4 +1,4 @@
-# NetOps Asset Manager Skill 🚀
+# NetOps Asset Manager
 
 [English](#english) | [中文](#chinese)
 
@@ -7,95 +7,131 @@
 <a name="english"></a>
 ## English
 
-Automated IT infrastructure inventory and maintenance skill for OpenClaw. This skill empowers your AI agent to manage network devices (H3C, Huawei, Cisco, MikroTik, Ruijie, DCN, TP-LINK, NETGEAR) and Linux systems through natural language.
+High-performance IT infrastructure asset management platform built with **Go + Vue 3**. A single binary serves both API and frontend, designed for internal network operations teams managing routers, switches, servers, and GPU clusters.
 
-### ✨ Key Features
-- **Intelligent Parsing**: Automatically extract IP, Vendor, Model, and Location from unstructured text or tables.
-- **Bilingual Reporting**: Support for automated daily reports and alerts in both English and Chinese (Supports Bark, DingTalk, Feishu).
-- **Bulk Import**: Native support for **Excel (.xlsx)** and **CSV** asset lists for rapid onboarding.
-- **Full-Stack Diagnostics**: Deep inspection capabilities across OSI layers, from **Physical (SFP/Cable)** to **Application (HTTP/API)**.
-- **Enterprise Server OOB**: Full support for **DELL iDRAC (inc. racadm)**, **Inspur ISBMC**, and **Supermicro IPMI**.
-- **Wireless, Security & Routing**: Support for **AC/AP**, **Firewalls** (Fortinet, Palo Alto, etc.), **Gateways** (including Ruijie EG), and core routing protocols (BGP/OSPF).
-- **Cloud Native & DevOps**: Streamlined maintenance for **Docker**, **Kubernetes (K8s)**, and **Nginx**.
-- **Virtualization Support**: Advanced management for **VMware ESXi**, **OpenStack**, **QEMU/KVM**, and **LXC** (Proxmox compatible).
-- **GPU Maintenance**: Support for **NVIDIA** and **AMD** driver installation (official CN/HK sources) and health monitoring.
-- **Remote Control & SSH**: Integrated **Direct SSH Login** (one-click) and **Remote Reboot** with user/password credential management.
-- **Network Performance**: Integrated tools for **Speedtest**, **Route Tracing (MTR)**, and **Subnet Scanning (Nmap)**.
-- **Real-time Health Check**: High-performance asynchronous parallel Ping detection for instant device status updates.
-- **Web Dashboard**: Modern SPA (Vue 3 + Tailwind) with Pro Dark Aesthetic, AI Assistant (OpenClaw powered), Markdown support, LLM API Model Management, Topology Visualization, and PM2 Task Management.
-- **Safety First**: **Human-in-the-loop** confirmation required for all core network configuration changes.
-- **On-Premise Deployment**: Secure management within internal networks via one-click environment setup.
+### Key Features
+- **Device Lifecycle**: Full CRUD for network devices with SSH credential management, vendor auto-detection, and bulk Excel/CSV import.
+- **Real-time Health Probing**: Background goroutine performs ICMP ping + TCP:22 checks every 5 minutes across all assets.
+- **Native SSH Operations**: Go-native SSH client for remote reboot and configuration backup (H3C, Huawei, Cisco, MikroTik, Linux).
+- **AI Assistant**: Integrated OpenClaw-powered chat with Markdown rendering and intent-based asset auto-registration.
+- **LLM Model Management**: Full CRUD for OpenClaw AI model configurations, synced to `~/.openclaw/openclaw.json`.
+- **Network Topology**: Interactive vis-network graph visualization of device connections.
+- **PM2 Process Management**: Monitor, restart, stop, and deploy PM2 tasks across machines.
+- **Role-Based Access**: JWT authentication with three roles — `root`, `operator`, `viewer`.
+- **Theme Support**: Dark / Light / Auto (time-based) theme switching with glass morphism UI.
+- **Single Binary Deployment**: Frontend embedded via Go `embed.FS` — one binary, no nginx required.
 
-### 🛠️ Structure
-- `SKILL.md`: Core workflow definitions and agent instructions.
-- `scripts/`: Python tools for inventory, health checks, GPU, OOB, DevOps, and Dashboards. Includes `setup_env.sh` for auto-initialization.
-- `references/`: Vendor command libraries, dependency guides, and automation implementation guides.
+### Tech Stack
+| Layer | Technology |
+|---|---|
+| Backend | Go 1.26 + Gin + Ent ORM |
+| Frontend | Vue 3.4 + Vite 5 + TailwindCSS + Pinia |
+| Database | PostgreSQL 15+ |
+| SSH | golang.org/x/crypto/ssh (native) |
+| Auth | JWT (golang-jwt/v5) + bcrypt |
 
-### 🚀 Quick Start
-1. **Internal Deployment**: Install OpenClaw on a host within your internal management network.
-2. **Auto Setup**: Install the skill directly via npm (recommended for production):
-   ```bash
-   npm install -g @boos4721/netops-asset-manager-skill
-   ```
-   For CN users, use our accelerated mirror script for environment setup:
-   ```bash
-   curl -fsSL https://cdn.jsdelivr.net/gh/Boos4721/netops-asset-manager-skill/scripts/setup_env.sh | bash
-   ```
-   Or run the local setup script manually:
-   ```bash
-   chmod +x scripts/setup_env.sh
-   ./scripts/setup_env.sh
-   ```
-3. **Usage**: Tell your agent: *"Add a Huawei switch at 192.168.1.1 in the Data Center."*
+### Project Structure
+```
+netops-asset-manager-skill/
+├── backend/                  # Go backend
+│   ├── cmd/
+│   │   ├── server/main.go    # Entry point: config, DB, router, health prober
+│   │   └── migrate/main.go   # One-shot: inventory.json → PostgreSQL
+│   ├── config/config.go      # Viper config loader
+│   ├── ent/schema/           # Ent ORM schemas (device, user, backup, topology_link)
+│   └── internal/
+│       ├── auth/             # JWT, bcrypt, middleware
+│       ├── handler/          # 13 Gin handlers (inventory, auth, topology, models, chat, etc.)
+│       ├── router/           # Route registration + middleware chain
+│       ├── service/          # Health prober, SSH client, Excel importer
+│       └── embedded/         # embed.FS for frontend dist/
+├── frontend/                 # Vue 3 SPA
+│   ├── src/
+│   │   ├── api/client.ts     # Axios + JWT interceptor
+│   │   ├── stores/           # Pinia: auth, inventory, stats, theme
+│   │   ├── components/       # Layout (Sidebar, Header) + UI (Modal, StatusBadge)
+│   │   └── views/            # 8 views: Dashboard, Inventory, Topology, Jobs, etc.
+│   └── vite.config.ts
+├── config.yaml               # Default configuration
+├── Makefile                  # build / dev / migrate / generate
+├── Dockerfile                # Multi-stage (node → go → alpine)
+└── go.mod
+```
 
-### ⚖️ License
-This project is licensed under the **CC BY-NC 4.0**. **Commercial use is strictly prohibited.**
+### Quick Start
+
+```bash
+# Prerequisites: Go 1.26+, Node.js 22+, PostgreSQL 15+
+
+# 1. Create database
+createdb netops
+
+# 2. Configure
+cp config.yaml config.local.yaml
+# Edit DATABASE_URL and JWT_SECRET
+
+# 3. Build & run
+make build
+./netops
+# → http://localhost:8081  (default: admin / admin)
+
+# Development mode (two terminals)
+make dev-backend    # Go server on :8081
+make dev-frontend   # Vite dev server on :5173 (proxies /api → :8081)
+```
+
+### License
+This project is licensed under **CC BY-NC 4.0**. Commercial use is prohibited.
 
 ---
 
 <a name="chinese"></a>
 ## 中文
 
-为 OpenClaw 打造的自动化 IT 基础设施资产管理与运维技能包。该技能赋予 AI Agent 通过自然语言管理内网网络设备（华三、华为、思科、锐捷、神州数码、TP-LINK、网件等）、Linux 系统及算力集群。
+基于 **Go + Vue 3** 构建的高性能 IT 基础设施资产管理平台。单二进制部署，内嵌前端，专为内网运维团队设计，管理路由器、交换机、服务器及 GPU 集群。
 
-### ✨ 核心功能
-- **智能解析**：自动从凌乱的文本或表格中提取 IP、厂商、型号和位置信息。
-- **双语巡检与告警**：支持自动化巡检日报及告警信息的“中英双语”推送（支持 Bark、钉钉、飞书）。
-- **批量导入**：原生支持 **Excel (.xlsx)** 与 **CSV** 资产清单批量入库。
-- **全栈链路诊断**：具备覆盖 OSI 七层模型的深层巡检能力，从物理层（SFP/线缆）到应用层（HTTP/API）。
-- **企业服务器带外 (OOB)**：深度支持 **DELL iDRAC (含 racadm)**、**浪潮 ISBMC** 及 **超微 IPMI**。
-- **无线、安全与路由**：支持 **AC/AP**、**防火墙**（飞塔、Palo Alto 等）、**网关**（含锐捷 EG 系列）及核心路由协议（BGP/OSPF）。
-- **DevOps 与云原生**：集成 **Docker**、**Kubernetes** 及 **Nginx** 的自动化维护。
-- **虚拟化管理**：支持 **VMware ESXi**、**OpenStack**、**QEMU/KVM** 及 **LXC** (Proxmox 兼容)。
-- **显卡运维 (GPU)**：支持 **NVIDIA (N卡)** 与 **AMD (A卡)** 官网驱动静默安装及高温/显存监控。
-- **远程控制与 SSH**：集成 **SSH 一键直连**、**远程重启**及 SSH 凭据（用户名/密码）安全管理。
-- **网络性能监测**：集成 **Speedtest**、**MTR 路由追踪**及 **Nmap 网段发现**。
-- **实时健康检查**：采用高性能 **Asynchronous (asyncio)** 并行 Ping 探测，实现资产状态的即时更新。
-- **现代化 Web 看板 (Dashboard)**：基于 Vue 3 + Tailwind 构建，集成 OpenClaw 驱动的 AI 助理（支持 Markdown 渲染）、LLM 大模型管理、网络拓扑可视化与 PM2 进程管理。
-- **安全加固**：核心网络变更引入 **人工审查 (Human-in-the-loop)** 机制，确保安全。
-- **内网部署**：支持一键环境初始化，确保管理流量不经过公网，安全可控。
+### 核心功能
+- **设备全生命周期**：设备增删改查，SSH 凭据管理，厂商自动识别，Excel/CSV 批量导入。
+- **实时健康探测**：后台 goroutine 每 5 分钟对所有资产执行 ICMP ping + TCP:22 检测。
+- **原生 SSH 操作**：Go 原生 SSH 客户端，支持远程重启和配置备份（华三、华为、思科、锐捷、MikroTik、Linux）。
+- **AI 智能助手**：集成 OpenClaw 驱动的对话式 AI，支持 Markdown 渲染和自然语言资产录入。
+- **LLM 模型管理**：OpenClaw 模型配置的增删改查，直接同步 `~/.openclaw/openclaw.json`。
+- **网络拓扑**：基于 vis-network 的交互式拓扑图可视化。
+- **PM2 进程管理**：监控、重启、停止、跨机器部署 PM2 任务。
+- **RBAC 权限控制**：JWT 认证，三级角色 — `root`、`operator`、`viewer`。
+- **主题切换**：深色 / 浅色 / 自动（按时间），玻璃拟态 UI 设计。
+- **单二进制部署**：前端通过 Go `embed.FS` 内嵌，一个文件即可运行，无需 nginx。
 
-### 🛠️ 目录结构
-- `SKILL.md`: 核心流程定义与 Agent 执行指令。
-- `scripts/`: Python 工具集（资产管理、硬件巡检、Web 看板、带外管理等）及 `setup_env.sh` 环境初始化脚本。
-- `references/`: 厂商命令库、系统依赖指南及自动化执行参考文档。
+### 技术栈
+| 层级 | 技术 |
+|---|---|
+| 后端 | Go 1.26 + Gin + Ent ORM |
+| 前端 | Vue 3.4 + Vite 5 + TailwindCSS + Pinia |
+| 数据库 | PostgreSQL 15+ |
+| SSH | golang.org/x/crypto/ssh（原生） |
+| 认证 | JWT (golang-jwt/v5) + bcrypt |
 
-### 🚀 快速开始
-1. **内网部署**：在您的内网接入一台 OpenClaw 主机。
-2. **自动环境搭建**：直接通过 npm 安装 Skill（推荐生产环境）：
-   ```bash
-   npm install -g @boos4721/netops-asset-manager-skill
-   ```
-   推荐中国大陆用户使用 jsDelivr 加速脚本进行环境一键初始化：
-   ```bash
-   curl -fsSL https://cdn.jsdelivr.net/gh/Boos4721/netops-asset-manager-skill/scripts/setup_env.sh | bash
-   ```
-   或者手动运行本地环境搭建脚本：
-   ```bash
-   chmod +x scripts/setup_env.sh
-   ./scripts/setup_env.sh
-   ```
-3. **开始使用**：对 Agent 说：*"记录一台华为交换机，IP 是 192.168.1.1，在 A 座机房。"*
+### 快速开始
 
-### ⚖️ 开源协议
-本项目采用 **CC BY-NC 4.0** 协议。**严禁用于任何商业用途。**
+```bash
+# 前置条件：Go 1.26+、Node.js 22+、PostgreSQL 15+
+
+# 1. 创建数据库
+createdb netops
+
+# 2. 配置
+cp config.yaml config.local.yaml
+# 编辑 DATABASE_URL 和 JWT_SECRET
+
+# 3. 构建并运行
+make build
+./netops
+# → http://localhost:8081（默认账号：admin / admin）
+
+# 开发模式（两个终端）
+make dev-backend    # Go 服务 :8081
+make dev-frontend   # Vite 开发服务器 :5173（自动代理 /api → :8081）
+```
+
+### 开源协议
+本项目采用 **CC BY-NC 4.0** 协议。**严禁商用。**

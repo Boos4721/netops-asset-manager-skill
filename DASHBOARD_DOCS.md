@@ -1,101 +1,185 @@
 # NetOps Dashboard 使用文档
 
-本文档介绍 NetOps Asset Manager 项目中 **Web Dashboard** 的功能、架构与使用说明。该 Dashboard 为用户提供了一个现代化的、响应式的控制台，用于管理资产、下发任务、管理权限以及使用 AI 助手。
+本文档介绍 NetOps Asset Manager 的 **Web Dashboard** 功能、架构与使用说明。
 
 ## 1. 架构概述
 
-Dashboard 采用前后端分离的架构：
-*   **前端 (UI)**：基于 **Vue 3**（组合式 API）构建的单页应用（SPA），使用 **Tailwind CSS** 进行样式设计，图标采用 **Lucide**，拓扑图使用 **Vis.js** 渲染。界面具有“Pro Dark”专业暗黑美学，集成毛玻璃 (Glassmorphism) 质感、动态渐变背景与流畅的动画过渡。
-*   **后端 (API)**：基于 **FastAPI** 与 **Uvicorn** 构建的现代化异步 API (`scripts/api_server.py`)，负责处理前端请求并与系统底层交互。
-*   **数据库**：使用 **PostgreSQL** (`netops` 数据库) 进行用户权限管理（RBAC）。
-*   **进程管理**：集成 **PM2** 进行后台脚本/任务的管理与监控。
+Dashboard 采用前后端一体化的单二进制架构：
 
-## 2. 功能模块指南
+| 组件 | 技术 | 说明 |
+|---|---|---|
+| **后端** | Go 1.26 + Gin + Ent ORM | RESTful API，JWT 认证，后台健康探测 |
+| **前端** | Vue 3.4 + Vite 5 + TailwindCSS | SPA，通过 Go `embed.FS` 内嵌到二进制 |
+| **数据库** | PostgreSQL 15+ | 全量数据存储（设备、用户、备份、拓扑） |
+| **SSH** | golang.org/x/crypto/ssh | Go 原生 SSH，替代 sshpass/Netmiko |
+
+### 目录结构
+```
+backend/                      # Go 后端
+├── cmd/server/main.go        # 入口：加载配置、连接DB、启动路由和健康探测
+├── config/config.go          # Viper 配置加载
+├── ent/schema/               # 数据库模型（device, user, backup, topology_link）
+└── internal/
+    ├── auth/                 # JWT 生成/验证、bcrypt、中间件
+    ├── handler/              # 13 个 API Handler
+    ├── router/router.go      # 路由注册 + 中间件链
+    ├── service/              # 健康探测、SSH、Excel 导入
+    └── embedded/             # embed.FS（内嵌前端 dist/）
+
+frontend/                     # Vue 3 前端
+├── src/
+│   ├── api/client.ts         # Axios 实例（JWT 拦截器 + 401 自动登出）
+│   ├── stores/               # Pinia 状态管理（auth, inventory, stats, theme）
+│   ├── components/           # 布局组件（Sidebar, Header）+ UI 组件（Modal, StatusBadge）
+│   └── views/                # 8 个视图页面
+└── vite.config.ts            # Vite 配置（开发代理 + 构建输出）
+```
+
+## 2. 功能模块
 
 ### 2.1 登录与鉴权
-*   **入口**：访问 Dashboard 时，首先进入登录页面。
-*   **默认账号**：提供默认的超级管理员账户（用户名：`admin`，密码：`boos`）。
-*   **安全**：账号信息由底层的 PostgreSQL 数据库验证。
+- **JWT 认证**：登录后返回 JWT Token，所有 API 请求通过 `Authorization: Bearer` 头传递。
+- **默认账号**：首次启动自动创建超级管理员 `admin`（密码：`admin`）。
+- **角色体系**：`root`（全部权限） > `operator`（设备操作） > `viewer`（只读）。
+- **401 自动处理**：Token 过期后前端自动跳转登录页。
 
-### 2.2 资产总览 (Dashboard)
-*   **数据大屏**：页面顶部展示系统的实时核心指标（总资产数、在线设备数、PM2 进程数、数据库用户数），并带有响应式动态更新（Vue Ref）。
-*   **实时探测逻辑**：资产状态不再仅依赖静态记录。每次加载资产列表时，后端会通过 `asyncio` 并行对所有 IP 进行实时 Ping 探测，确保“在线/离线”状态的绝对准确。
-*   **资产列表 (支持 CRUD)**：
-    *   **展示与检索**：以表格形式列出所有已录入的设备（来源于 `assets/inventory.json`），并支持在顶部搜索框根据关键字（IP、设备名、品牌）进行即时过滤。
-    *   **增删改查**：提供“添加资产”按钮用于手工录入；每行操作列支持“编辑”与“删除”设备数据。
-    *   **详情视图**：点击表格中的任意设备行，可唤出设备详情面板，直观展示该设备的机柜、U位、功耗、备注等深度台账信息。
+### 2.2 控制台 (Dashboard)
+- **实时统计卡片**：资产总数、在线设备、离线设备、GPU 节点数。
+- **最近资产列表**：展示最近录入的 8 台设备及其状态。
+- **数据来源**：后端 `/api/stats` + `/api/inventory` API。
 
-### 2.3 物理拓扑 (Topology) - *Beta*
-*   使用 Vis.js 引擎自动将录入的网络设备与服务器渲染成带有层级（核心、汇聚、接入）的动态拓扑关系图，使网络结构可视化。
+### 2.3 资产清单 (Inventory)
+- **搜索过滤**：按 IP、名称、厂商、位置实时搜索。
+- **增删改查**：添加、编辑、删除设备，支持 SSH 凭据管理。
+- **批量导入**：上传 Excel (.xlsx) 文件批量导入设备（支持中英文表头）。
+- **远程操作**：
+  - **SSH 重启**：Go 原生 SSH 发送 reboot 命令。
+  - **配置备份**：按厂商自动发送对应命令（`display current-configuration` / `show running-config` 等），备份存入数据库。
+- **设备详情**：点击查看设备全部字段信息。
 
-### 2.4 PM2 进程管理
-*   **状态监控**：实时从后端拉取并显示本机的 PM2 任务状态，包括任务名称、运行状态（Online/Stopped）、内存占用、CPU 使用率和重启次数。
-*   **业务机前置条件**：批量部署任务到业务机时，业务机需要**预装 PM2**（通过包管理器安装，如 `apt install pm2` 或 `yum install pm2`），无需安装 Node.js。
-*   **自定义部署**：
-    *   点击“部署新任务”可唤出部署面板。
-    *   支持填写：任务名称、本地二进制文件路径（如 `/usr/local/bin/script`）、运行参数。
-    *   支持批量部署：可填写多个目标设备的 IP（逗号分隔），系统会自动通过 SSH 下发执行 `pm2 start` 的指令。
+### 2.4 网络拓扑 (Topology)
+- **可视化引擎**：基于 vis-network 渲染交互式网络拓扑图。
+- **连接管理**：添加/删除设备间连接，支持标签标注。
+- **状态着色**：在线设备节点高亮显示为绿色。
 
-### 2.5 用户权限管理 (RBAC)
-*   **管理后台**：通过调用 PostgreSQL，直观展示当前系统中的账号列表（ID、用户名、角色）。
-*   **账号操作**：
-    *   **创建账号**：可以新建用户，并分配角色（Root 管理员、Operator 运维、Viewer 只读）。
-    *   **删除账号**：支持快速删除账号（内置保护，防止误删 `admin`）。
+### 2.5 任务管理 (Jobs / PM2)
+- **状态监控**：实时展示 PM2 进程名称、状态、重启次数、CPU/内存占用。
+- **操作控制**：重启、停止、删除进程。
+- **日志查看**：查看进程运行日志。
+- **远程部署**：批量部署二进制到目标设备。
 
-### 2.6 AI 智能助理 (在线 Session)
-*   **形态**：已升级为左侧菜单中的全屏独立视图，提供沉浸式的自然语言对话体验。
-*   **OpenClaw 深度集成**：底层通过代理连接至 **OpenClaw Gateway**，复用 OpenClaw 的强大推理与工具调用能力。
-*   **Markdown 支持**：聊天界面原生支持 **Markdown 渲染**（基于 marked.js），能够美观地展示列表、代码块和加粗文本。
-*   **自动化资产录入**：
-    *   助理具备意图识别能力。例如，当你说：“录入一台 10.1.1.1 的 H3C 交换机”时，助理会返回结构化的指令标签。
-    *   前端会自动解析 `ACTION: ADD_ASSET` 标签并静默执行录入操作，无需手动填写表单。
-    *   对话过程中支持“清空历史”重置当前会话。
+### 2.6 系统部署 (Deploy)
+- **一键部署**：支持 Docker Engine、vLLM、llama.cpp 的后台安装。
+- **异步执行**：部署任务通过 PM2 在后台运行，可在任务管理页查看进度。
 
-### 2.7 LLM 模型与 API 管理
-*   **形态**：全新的独立管理面板，对标 OpenClaw 的 `models` 管理逻辑。
-*   **同步机制**：模型列表**实时同步**自 OpenClaw 配置文件 (`~/.openclaw/openclaw.json`)。
-*   **高级参数支持**：支持配置每个模型的 `contextWindow` (上下文窗口) 与 `maxTokens` (最大输出)，避免空值导致请求失败。
-*   **设为默认模型**：支持一键将选定模型设为 OpenClaw 的 **Global Primary Model**，修改后 OpenClaw 的所有 Agent 将默认使用该模型。
-*   **增删改功能**：在 Dashboard 中添加、编辑或删除模型配置，会**直接同步写回** OpenClaw 配置文件，修改立即生效。
+### 2.7 模型管理 (Models)
+- **模型 CRUD**：添加、编辑、删除 AI 模型配置。
+- **OpenClaw 同步**：直接读写 `~/.openclaw/openclaw.json`。
+- **设为默认**：一键设置默认推理模型。
+- **参数配置**：Context Window、Max Tokens、推理模式等。
+
+### 2.8 AI 助手 (Chat)
+- **对话界面**：全屏对话视图，支持历史消息上下文。
+- **Markdown 渲染**：AI 回复支持代码块、列表、加粗等 Markdown 格式。
+- **OpenClaw 集成**：底层通过 `openclaw agent` CLI 代理。
+- **资产自动录入**：AI 识别录入意图后返回 `ACTION: ADD_ASSET` 标签。
+
+### 2.9 系统设置 (Settings)
+- **系统信息**：显示 OpenClaw 版本、内核信息、认证状态。
+- **外观主题**：深色 / 浅色 / 自动（按时间切换）。
+- **用户管理**（root 专属）：创建/删除用户，分配角色。
 
 ## 3. 部署与启动
 
 ### 前置条件
-1.  **PostgreSQL**：
-    *   必须已安装并运行。
-    *   初始化数据库（setup_env.sh 会自动执行）：
-      ```bash
-      sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'boos';"
-      sudo -u postgres psql -c "CREATE DATABASE netops;"
-      ```
-    *   默认存在 `admin` 账号（密码：`boos`），首次登录后可在界面中管理用户。
-2.  **Node.js / PM2**：通过包管理器安装（如 `apt install npm`，然后 `npm install -g pm2`），运行 `scripts/setup_env.sh` 时会自动检测并安装。
-3.  **Python 依赖**：后端需安装 `psycopg2`, `fastapi`, `httpx`, `uvicorn` 等模块（由 `setup_env.sh` 自动安装）。
+- **Go 1.26+**：编译后端。
+- **Node.js 22+**：构建前端。
+- **PostgreSQL 15+**：数据存储。
 
-### 启动服务
+### 构建与运行
 
-**推荐方式（自动启动）：**
-在运行 `scripts/setup_env.sh` 初始化环境的最后一步，脚本会询问您是否启动 Dashboard：
-`❓ 是否启动 NetOps Dashboard (API与Web界面)? [Y/n]`
-输入 `Y` 或直接回车，系统将通过 PM2 自动为您拉起前后端服务。
+```bash
+# 创建数据库
+createdb netops
 
-**手动启动方式：**
-如果您跳过了自动启动，也可以进入项目根目录，手动通过 PM2 拉起这两个服务：
+# 构建单二进制（前端 + 后端）
+make build
 
-1.  **启动后端 API 服务** (默认端口 8081)：
-    ```bash
-    pm2 start python3 --name "netops-api" --interpreter python3 -- ./scripts/api_server.py
-    ```
-2.  **启动前端 Web 服务** (推荐使用内置 proxy，端口 8082)：
-    ```bash
-    pm2 start python3 --name "netops-ui" --interpreter python3 -- ./ui/serve_ui.py
-    ```
+# 运行
+./netops
+# → http://localhost:8081
+# → 默认账号：admin / admin
+```
 
-> ℹ️ 启动完成后，终端会显示本机 IP 地址，直接访问 `http://<IP>:8082` 即可。
+### 开发模式
 
-## 4. 常见问题排查
+```bash
+# 终端 1：后端（端口 8081）
+make dev-backend
 
-*   **页面白屏**：通常是由于 JS 变量冲突（已在 Commit `1b85d59` 修复）或 `v-cloak` 导致。请确保 `ui/index.html` 中的 Vue 挂载逻辑正确。
-*   **无法加载数据**：检查 `serve_ui.py` 是否正常工作，且 8081 端口的 API 服务是否存活。
-*   **AI 助手不回复**：检查 `openclaw gateway` 是否在运行，以及 `api_server.py` 是否能正确调用 `openclaw agent` 命令。
-*   **资产显示离线**：系统会实时 Ping 目标 IP。如果设备确实在线但显示离线，请检查运行 `api_server.py` 的账号是否有执行 `ping` 命令的权限。
+# 终端 2：前端（端口 5173，自动代理 /api → 8081）
+make dev-frontend
+```
+
+### Docker 部署
+
+```bash
+# 构建镜像
+make docker-build
+
+# 运行
+docker run -p 8081:8081 \
+  -e DATABASE_URL="postgres://user:pass@host:5432/netops?sslmode=disable" \
+  -e JWT_SECRET="your-secret" \
+  netops-asset-manager:latest
+```
+
+### 数据迁移（从旧版）
+
+```bash
+# 将 assets/inventory.json 导入 PostgreSQL
+make migrate
+```
+
+## 4. 配置说明
+
+配置文件 `config.yaml`，所有选项支持环境变量覆盖：
+
+| 键 | 默认值 | 说明 |
+|---|---|---|
+| `PORT` | 8081 | 监听端口 |
+| `DATABASE_URL` | postgres://postgres:postgres@127.0.0.1:5432/netops?sslmode=disable | PostgreSQL 连接串 |
+| `JWT_SECRET` | netops-change-me-in-production | JWT 签名密钥 |
+| `JWT_EXPIRY` | 24h | Token 有效期 |
+| `PROBE_INTERVAL` | 5m | 健康探测间隔 |
+| `OPENCLAW_CONFIG_PATH` | ~/.openclaw/openclaw.json | OpenClaw 配置路径 |
+| `SSH_CONNECT_TIMEOUT` | 10s | SSH 连接超时 |
+
+## 5. API 路由一览
+
+| 方法 | 路径 | 权限 | 说明 |
+|---|---|---|---|
+| POST | `/api/users/login` | 公开 | 登录，返回 JWT |
+| GET | `/api/inventory` | 认证 | 设备列表 |
+| POST | `/api/inventory/add` | operator+ | 添加设备 |
+| PUT | `/api/inventory/:ip` | operator+ | 编辑设备 |
+| DELETE | `/api/inventory/:ip` | operator+ | 删除设备 |
+| POST | `/api/inventory/reboot/:ip` | operator+ | SSH 远程重启 |
+| POST | `/api/inventory/backup/:ip` | operator+ | SSH 配置备份 |
+| POST | `/api/inventory/import` | operator+ | Excel 批量导入 |
+| GET | `/api/stats` | 认证 | 统计数据 |
+| GET/POST/DELETE | `/api/users` | root | 用户管理 |
+| POST | `/api/discover` | operator+ | Nmap 子网扫描 |
+| GET/POST/DELETE | `/api/topology/links` | 认证/operator+ | 拓扑连接管理 |
+| GET/POST/PUT/DELETE | `/api/models` | 认证/root | AI 模型管理 |
+| GET | `/api/pm2/status` | 认证 | PM2 状态 |
+| POST | `/api/chat` | 认证 | AI 对话 |
+| GET | `/api/system/info` | 认证 | 系统信息 |
+
+## 6. 常见问题
+
+- **页面白屏**：确认 `make build` 已执行前端构建（`frontend/` → `backend/internal/embedded/dist/`）。
+- **无法连接数据库**：检查 `config.yaml` 中的 `DATABASE_URL` 和 PostgreSQL 服务状态。
+- **AI 助手不回复**：确认 `openclaw gateway` 正在运行。
+- **设备显示离线**：健康探测依赖 ICMP ping 权限，确保运行用户有 ping 权限。
+- **SSH 操作失败**：检查设备的 SSH 凭据是否已配置（资产编辑页）。

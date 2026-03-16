@@ -1,8 +1,9 @@
 BINARY    := netops
-WEB_DIR   := web
-DIST_DIR  := internal/embedded/dist
-SERVER    := ./cmd/server
-MIGRATE   := ./cmd/migrate
+FRONTEND  := frontend
+BACKEND   := backend
+DIST_DIR  := $(BACKEND)/internal/embedded/dist
+SERVER    := ./$(BACKEND)/cmd/server
+MIGRATE   := ./$(BACKEND)/cmd/migrate
 
 .PHONY: all build build-frontend build-backend migrate dev-frontend dev-backend clean docker-build docker-run
 
@@ -13,7 +14,7 @@ build: build-frontend build-backend
 
 build-frontend:
 	@echo "==> Building frontend..."
-	cd $(WEB_DIR) && npm run build
+	cd $(FRONTEND) && npm run build
 
 build-backend:
 	@echo "==> Building backend..."
@@ -25,7 +26,7 @@ migrate:
 
 ## Development servers (run in separate terminals)
 dev-frontend:
-	cd $(WEB_DIR) && npm run dev
+	cd $(FRONTEND) && npm run dev
 
 dev-backend:
 	@command -v air >/dev/null 2>&1 && air || go run $(SERVER)
@@ -36,7 +37,7 @@ tidy:
 
 ## Re-generate Ent schema code
 generate:
-	go run entgo.io/ent/cmd/ent generate ./ent/schema
+	go run entgo.io/ent/cmd/ent generate ./$(BACKEND)/ent/schema
 
 ## Clean build artifacts
 clean:
